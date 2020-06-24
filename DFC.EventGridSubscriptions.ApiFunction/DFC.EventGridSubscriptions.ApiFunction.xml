@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DFC.EventGridSubscriptions.ApiFunction</name>
+    </assembly>
+    <members>
+        <member name="T:DFC.EventGridSubscriptions.ApiFunction.Execute">
+            <summary>
+            The Execute Function.
+            </summary>
+        </member>
+        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.#ctor(DFC.EventGridSubscriptions.Services.Interface.ISubscriptionRegistrationService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DFC.EventGridSubscriptions.ApiFunction.Execute"/> class.
+            </summary>
+            <param name="subscriptionRegistrationService">A Subscription Registration Service.</param>
+        </member>
+        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.Run(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Runs the function.
+            </summary>
+            <param name="req">The Request.</param>
+            <param name="log">The Logger.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:DFC.EventGridSubscriptions.ApiFunction.StartUp.FunctionStartupExtension">
+            <summary>
+            The function startup extension.
+            </summary>
+        </member>
+        <member name="M:DFC.EventGridSubscriptions.ApiFunction.StartUp.FunctionStartupExtension.Configure(Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder)">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>
