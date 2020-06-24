@@ -1,0 +1,18 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "CustomHostName": {
+            "value": "__OrchardEditorCustomHostName__"
+        },
+        "Environment": {
+            "value": "__ReleaseEnvironmentName__"
+        },
+        "SharedAppServicePlanName": {
+            "value": "__StaxSharedAppServicePlan__"
+        },
+        "SharedAppServicePlanResourceGroup": {
+            "value": "__StaxSharedResourceGroup__"
+        }
+    }
+}
