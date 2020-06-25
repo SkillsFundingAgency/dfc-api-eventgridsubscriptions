@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>
     </AzureFunctionsVersion>
     <ProjectGuid>{295A3470-917E-4CF4-8E44-24CB091FAACE}</ProjectGuid>
