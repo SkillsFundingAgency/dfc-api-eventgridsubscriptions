@@ -24,3 +24,16 @@ stages:
       parameters:
         ArmTemplateRoot: $(ArmTemplateRoot)
         SolutionBaseName: $(SolutionBaseName)
+  
+  #Build and test application
+  - job: BuildDotNetCore
+    displayName: Build-DotNetCore
+    steps:
+    - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-dotnetcore-build-sonar.yml@dfc-devops
+      parameters:
+        SolutionBaseName: $(SolutionBaseName)
+        BuildPlatform: $(BuildPlatform)
+        BuildConfiguration: $(BuildConfiguration)
+        DotNetCoreVersion: 3.1.101
+        PublishWebApp: false
+        TestSuffix: UnitTests
