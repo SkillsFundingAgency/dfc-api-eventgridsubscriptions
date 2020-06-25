@@ -1,12 +1,15 @@
 ﻿using DFC.EventGridSubscriptions.Data;
+using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.Services
@@ -14,18 +17,70 @@ namespace DFC.EventGridSubscriptions.Services
     public class SubscriptionRegistrationService : ISubscriptionRegistrationService
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions;
+        private readonly ILogger<SubscriptionRegistrationService> logger;
 
-        public SubscriptionRegistrationService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions)
+        public SubscriptionRegistrationService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions, ILogger<SubscriptionRegistrationService> logger)
         {
             this.eventGridSubscriptionClientOptions = eventGridSubscriptionClientOptions;
+            this.logger = logger;
         }
 
-        public async Task<string> AddSubscription()
+        public async Task<HttpStatusCode> AddSubscription(SubscriptionRequest request)
         {
-            EventGridManagementClient eventGridManagementClient = await CreateEventGridManagementClient();
+            try
+            {
+                this.ValidateRequest(request);
 
-            await CreateEventGridEventSubscriptionAsync("my-test-subscription", eventGridManagementClient, "https://webhook.site/337754e2-0efe-4496-aa7a-a40babb80ba3");
-            return "";
+                logger.LogInformation($"{nameof(AddSubscription)} called for subscription: {request.Name}");
+
+                EventGridManagementClient eventGridManagementClient = await CreateEventGridManagementClient();
+
+                await CreateEventGridEventSubscriptionAsync(request!.Name!, eventGridManagementClient, request!.Endpoint!.ToString(), request.Filter);
+
+                return HttpStatusCode.Created;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"An error occured in {nameof(AddSubscription)} : {ex}");
+                return HttpStatusCode.InternalServerError;
+            }
+        }
+
+        private void ValidateRequest(SubscriptionRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                throw new ArgumentException(nameof(request.Name));
+            }
+
+            if(request.Endpoint == null)
+            {
+                throw new ArgumentException(nameof(request.Endpoint));
+            }
+        }
+
+        public async Task<HttpStatusCode> DeleteSubscription(string subscriptionName)
+        {
+            try
+            {
+                logger.LogInformation($"{nameof(DeleteSubscription)} called for subscription: {subscriptionName}");
+
+                EventGridManagementClient eventGridManagementClient = await CreateEventGridManagementClient();
+
+                await DeleteEventGridEventSubscriptionAsync(subscriptionName, eventGridManagementClient);
+
+                return HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"An error occured in {nameof(DeleteSubscription)} : {ex}");
+                return HttpStatusCode.InternalServerError;
+            }
+        }
+
+        private Task DeleteEventGridEventSubscriptionAsync(string subscriptionName, EventGridManagementClient eventGridManagementClient)
+        {
+            throw new NotImplementedException();
         }
 
         private async Task<EventGridManagementClient> CreateEventGridManagementClient()
@@ -35,18 +90,12 @@ namespace DFC.EventGridSubscriptions.Services
 
             EventGridManagementClient eventGridManagementClient = new EventGridManagementClient(credential)
             {
-                SubscriptionId = eventGridSubscriptionClientOptions.CurrentValue.SubscriptionId,
-                LongRunningOperationRetryTimeout = 2
+                SubscriptionId = eventGridSubscriptionClientOptions.CurrentValue.SubscriptionId
             };
+
             return eventGridManagementClient;
         }
 
-        public async Task<string> DeleteSubscription()
-        {
-            return string.Empty;
-        }
-
-        //The following method will enable you to use the token to create credentials
         private async Task<string> GetAuthorizationHeaderAsync()
         {
             ClientCredential cc = new ClientCredential(eventGridSubscriptionClientOptions.CurrentValue.ApplicationId, eventGridSubscriptionClientOptions.CurrentValue.ClientSecret);
@@ -63,12 +112,12 @@ namespace DFC.EventGridSubscriptions.Services
 
         }
 
-        private async Task CreateEventGridEventSubscriptionAsync(string eventSubscriptionName, EventGridManagementClient eventGridMgmtClient, string endpointUrl)
+        private async Task CreateEventGridEventSubscriptionAsync(string eventSubscriptionName, EventGridManagementClient eventGridMgmtClient, string endpointUrl, SubscriptionFilter? filter)
         {
             Topic topic = await eventGridMgmtClient.Topics.GetAsync(eventGridSubscriptionClientOptions.CurrentValue.ResourceGroup, eventGridSubscriptionClientOptions.CurrentValue.Topic);
             string eventSubscriptionScope = topic.Id;
 
-            Console.WriteLine($"Creating an event subscription to topic {topic.Name}...");
+            logger.LogInformation($"Creating an event subscription to topic {topic.Name}...");
 
             EventSubscription eventSubscription = new EventSubscription()
             {
@@ -76,24 +125,17 @@ namespace DFC.EventGridSubscriptions.Services
                 {
                     EndpointUrl = endpointUrl
                 },
-                // The below are all optional settings
                 EventDeliverySchema = EventDeliverySchema.EventGridSchema,
-                Filter = new EventSubscriptionFilter()
+                Filter = filter != null ? new EventSubscriptionFilter()
                 {
-                    // By default, "All" event types are included
                     IsSubjectCaseSensitive = false,
-                    SubjectBeginsWith = "",
-                    SubjectEndsWith = ""
-                }
+                    SubjectBeginsWith = filter.BeginsWith ?? "",
+                    SubjectEndsWith = filter.EndsWith ?? ""
+                } : new EventSubscriptionFilter()
             };
 
             EventSubscription createdEventSubscription = await eventGridMgmtClient.EventSubscriptions.CreateOrUpdateAsync(eventSubscriptionScope, eventSubscriptionName, eventSubscription);
-            Console.WriteLine("EventGrid event subscription created with name " + createdEventSubscription.Name);
-        }
-
-        public Task<string> DeleteSubcription()
-        {
-            throw new NotImplementedException();
+            logger.LogInformation("EventGrid event subscription created with name " + createdEventSubscription.Name);
         }
     }
 }
