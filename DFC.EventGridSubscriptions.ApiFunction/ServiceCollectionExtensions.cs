@@ -1,4 +1,6 @@
 ﻿using DFC.EventGridSubscriptions.Data;
+using DFC.EventGridSubscriptions.Services;
+using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -20,42 +22,15 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         /// <param name="services">The Service Provider.</param>
         public static void AddEventGridManagementClient(this IServiceCollection services)
         {
-            services.AddTransient<IEventGridManagementClient, EventGridManagementClient>(sp => { return GenerateEventGridManagementClient(sp).GetAwaiter().GetResult(); });
+            services.AddTransient<IEventGridManagementClientWrapper, EventGridManagementClientWrapper>();
+            services.AddSingleton<ISubscriptionClientFactory, SubscriptionClientFactory>();
+            services.AddTransient<IEventGridManagementClient, EventGridManagementClient>(sp => { return GetClient(sp).GetAwaiter().GetResult(); });
         }
 
-        private static async Task<EventGridManagementClient> GenerateEventGridManagementClient(IServiceProvider serviceProvider)
+        private static async Task<EventGridManagementClient> GetClient(IServiceProvider serviceProvider)
         {
-            var configuration = serviceProvider.GetRequiredService<IOptionsMonitor<EventGridSubscriptionClientOptions>>();
-
-            return await CreateEventGridManagementClient(configuration.CurrentValue).ConfigureAwait(false);
-        }
-
-        private static async Task<EventGridManagementClient> CreateEventGridManagementClient(EventGridSubscriptionClientOptions eventGridSubscriptionClientOptions)
-        {
-            string token = await GetAuthorizationHeaderAsync(eventGridSubscriptionClientOptions).ConfigureAwait(false);
-            TokenCredentials credential = new TokenCredentials(token);
-
-            EventGridManagementClient eventGridManagementClient = new EventGridManagementClient(credential)
-            {
-                SubscriptionId = eventGridSubscriptionClientOptions.SubscriptionId,
-            };
-
-            return eventGridManagementClient;
-        }
-
-        private static async Task<string> GetAuthorizationHeaderAsync(EventGridSubscriptionClientOptions eventGridSubscriptionClientOptions)
-        {
-            ClientCredential cc = new ClientCredential(eventGridSubscriptionClientOptions.ApplicationId, eventGridSubscriptionClientOptions.ClientSecret);
-            var context = new AuthenticationContext("https://login.windows.net/" + eventGridSubscriptionClientOptions.TenantId);
-            var result = await context.AcquireTokenAsync("https://management.azure.com/", cc).ConfigureAwait(false);
-
-            if (result == null)
-            {
-                throw new InvalidOperationException("Failed to obtain the JWT token. Please verify the values for your applicationId, Password, and Tenant.");
-            }
-
-            string token = result.AccessToken;
-            return token;
+            var subscriptionClientFactory = serviceProvider.GetRequiredService<ISubscriptionClientFactory>();
+            return await subscriptionClientFactory.CreateClient().ConfigureAwait(false);
         }
     }
 }
