@@ -2,6 +2,7 @@ variables:
     SolutionBaseName: 'DFC.EventGridSubscriptions.ApiFunction'
     BuildPlatform: 'any cpu'
     BuildConfiguration: 'release'
+    ArmTemplateRoot: '$(Build.SourcesDirectory)\Resources\ArmTemplates'
 
 resources:
   repositories:
