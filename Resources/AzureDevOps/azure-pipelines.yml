@@ -37,7 +37,7 @@ stages:
     - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-dotnetcore-build-sonar.yml@dfc-devops
       parameters:
         SolutionBaseName: $(SolutionBaseName)
-        BuildPlatform: $(BuildPlatform)
-        BuildConfiguration: $(BuildConfiguration)
-        PublishWebApp: true
-        TestSuffix: UnitTests
+        BuildPlatform: 'any cpu'
+        BuildConfiguration: 'release'
+        DotNetCoreVersion: '3.1.100'
+        TestSuffix: 'UnitTests'
