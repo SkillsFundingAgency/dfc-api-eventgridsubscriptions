@@ -20,10 +20,7 @@
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
-        "WebAppName": "[concat(variables('ResourcePrefix'), '-as')]",
-        "EventGridTopicName": "[tolower(concat('dfc-', parameters('Environment'), '-stax-egt'))]",
-        "EventGridSubscriptionName": "[tolower(concat('dfc-', parameters('Environment'), '-api-egs'))]",
-        "EventGridSubscriptionUrl": "tbc"
+        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]"
     },
     "resources": [
         {
@@ -48,7 +45,7 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "[variables('WebAppName')]",
+            "name": "[variables('FunctionAppName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -58,7 +55,7 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('WebAppName')]"
+                        "value": "[variables('FunctionAppName')]"
                     },
                     "appServicePlanName": {
                         "value": "[variables('AppServicePlanName')]"
@@ -81,7 +78,7 @@
                             },
                             {
                                 "name": "WEBSITE_RUN_FROM_PACKAGE",
-                                "value": "0"
+                                "value": "1"
                             }
                         ]
                     }
@@ -90,29 +87,6 @@
             "dependsOn": [
                 "[variables('AppServiceAppInsightsName')]"
             ]
-        },
-        {
-            "name": "[variables('EventGridSubscriptionName')]",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'),'eventgrid-subscription.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "eventGridTopicName": {
-                        "value": "[variables('eventGridTopicName')]"
-                    },
-                    "eventGridSubscriptionName": {
-                        "value": "[variables('eventGridSubscriptionName')]"
-                    },
-                    "eventGridSubscriptionUrl": {
-                        "value": "[variables('eventGridSubscriptionUrl')]"
-                    }
-                }
-            }
         }
     ],
     "outputs": {}

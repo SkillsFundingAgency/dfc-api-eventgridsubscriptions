@@ -3,13 +3,13 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Environment": {
-            "value": "__ReleaseEnvironmentName__"
+            "value": "dev"
         },
         "SharedAppServicePlanName": {
-            "value": "__sharedAppServicePlanName__"
+            "value": "dfc-dev-app-shared-asp"
         },
         "SharedAppServicePlanResourceGroup": {
-            "value": "__appSharedResourceGroup__"
+            "value": "dfc-dev-app-sharedresources-rg"
         }
     }
 }
