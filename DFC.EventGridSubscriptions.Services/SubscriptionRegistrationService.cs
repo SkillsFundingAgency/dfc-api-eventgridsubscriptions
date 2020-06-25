@@ -78,9 +78,16 @@ namespace DFC.EventGridSubscriptions.Services
             }
         }
 
-        private Task DeleteEventGridEventSubscriptionAsync(string subscriptionName, EventGridManagementClient eventGridManagementClient)
+        private async Task DeleteEventGridEventSubscriptionAsync(string subscriptionName, EventGridManagementClient eventGridManagementClient)
         {
-            throw new NotImplementedException();
+            Topic topic = await eventGridManagementClient.Topics.GetAsync(eventGridSubscriptionClientOptions.CurrentValue.ResourceGroup, eventGridSubscriptionClientOptions.CurrentValue.Topic);
+            string eventSubscriptionScope = topic.Id;
+
+            logger.LogInformation($"Deleting subscription {subscriptionName} from topic {topic.Name}...");
+
+            await eventGridManagementClient.EventSubscriptions.DeleteAsync(eventSubscriptionScope, subscriptionName);
+
+            logger.LogInformation("EventGrid event subscription deleted with name " + subscriptionName);
         }
 
         private async Task<EventGridManagementClient> CreateEventGridManagementClient()
