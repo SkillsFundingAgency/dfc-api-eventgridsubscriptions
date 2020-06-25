@@ -10,7 +10,7 @@ resources:
   - repository: dfc-devops
     type: github
     name: SkillsFundingAgency/dfc-devops
-    ref: refs/tags/v1.11.1
+    ref: refs/tags/v1.11.2
     endpoint: 'GitHub (ESFA)'
 
 pool:
@@ -21,23 +21,29 @@ pool:
 
 stages:
 - stage: Build
-  displayName: Build, Test and Analyze
   jobs:
   - job: BuildArmTemplates
+    displayName: "Build the ARM templates"
+    workspace:
+      clean: all
+    pool: 'NCS - CI and CD'
     steps:
-    - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-arm-build.yml@dfc-devops
+    - template: /AzureDevOpsTemplates/Build/StepTemplates/dfc-arm-build.yml@dfc-devops
       parameters:
-        ArmTemplateRoot: $(ArmTemplateRoot)
-        SolutionBaseName: $(SolutionBaseName)
+        ArmTemplateRoot: "$(System.DefaultWorkingDirectory)/Resources/ArmTemplates"
+
   
   #Build and test application
-  - job: BuildDotNetCore
-    displayName: Build-DotNetCore
+  - job: BuildDotNet
+    displayName: "Build the dotnet core application"
+    workspace:
+      clean: all
+    pool: 'NCS - CI and CD'
     steps:
     - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-dotnetcore-build-sonar.yml@dfc-devops
       parameters:
-        SolutionBaseName: $(SolutionBaseName)
+        SolutionBaseName: $(SolutionBaseName).
         BuildPlatform: 'any cpu'
         BuildConfiguration: 'release'
-        DotNetCoreVersion: '3.1.100'
-        TestSuffix: 'UnitTests'
+        DotNetCoreVersion: '3.1.201'
+        TestSuffix: UnitTests
