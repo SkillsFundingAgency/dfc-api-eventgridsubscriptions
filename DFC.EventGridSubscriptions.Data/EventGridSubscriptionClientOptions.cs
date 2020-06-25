@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace DFC.EventGridSubscriptions.Data
 {
+    [ExcludeFromCodeCoverage]
     public class EventGridSubscriptionClientOptions
     {
         public string? ApplicationId { get; set; }

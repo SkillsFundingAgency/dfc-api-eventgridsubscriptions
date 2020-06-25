@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DFC.EventGridSubscriptions.Data.Models
 {
+    [ExcludeFromCodeCoverage]
     public class SubscriptionRequest
     {
         public string? Name { get; set; }

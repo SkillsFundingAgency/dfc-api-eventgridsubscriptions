@@ -3,8 +3,10 @@ using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Rest;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -38,6 +40,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             builder.Services.AddSingleton<IConfiguration>(config);
 
             builder.Services.AddTransient<ISubscriptionRegistrationService, SubscriptionRegistrationService>();
+            builder.Services.AddEventGridManagementClient();
 
             builder.Services.AddOptions<EventGridSubscriptionClientOptions>()
                 .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("EventGridSubscriptionClientOptions").Bind(settings); });

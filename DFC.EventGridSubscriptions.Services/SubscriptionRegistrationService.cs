@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -17,11 +18,13 @@ namespace DFC.EventGridSubscriptions.Services
     public class SubscriptionRegistrationService : ISubscriptionRegistrationService
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions;
+        private readonly IEventGridManagementClient eventGridManagementClient;
         private readonly ILogger<SubscriptionRegistrationService> logger;
 
-        public SubscriptionRegistrationService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions, ILogger<SubscriptionRegistrationService> logger)
+        public SubscriptionRegistrationService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions, IEventGridManagementClient eventGridManagementClient, ILogger<SubscriptionRegistrationService> logger)
         {
             this.eventGridSubscriptionClientOptions = eventGridSubscriptionClientOptions;
+            this.eventGridManagementClient = eventGridManagementClient;
             this.logger = logger;
         }
 
@@ -32,8 +35,6 @@ namespace DFC.EventGridSubscriptions.Services
                 this.ValidateRequest(request);
 
                 logger.LogInformation($"{nameof(AddSubscription)} called for subscription: {request.Name}");
-
-                EventGridManagementClient eventGridManagementClient = await CreateEventGridManagementClient();
 
                 await CreateEventGridEventSubscriptionAsync(request!.Name!, eventGridManagementClient, request!.Endpoint!.ToString(), request.Filter);
 
@@ -65,8 +66,6 @@ namespace DFC.EventGridSubscriptions.Services
             {
                 logger.LogInformation($"{nameof(DeleteSubscription)} called for subscription: {subscriptionName}");
 
-                EventGridManagementClient eventGridManagementClient = await CreateEventGridManagementClient();
-
                 await DeleteEventGridEventSubscriptionAsync(subscriptionName, eventGridManagementClient);
 
                 return HttpStatusCode.OK;
@@ -78,7 +77,7 @@ namespace DFC.EventGridSubscriptions.Services
             }
         }
 
-        private async Task DeleteEventGridEventSubscriptionAsync(string subscriptionName, EventGridManagementClient eventGridManagementClient)
+        private async Task DeleteEventGridEventSubscriptionAsync(string subscriptionName, IEventGridManagementClient eventGridManagementClient)
         {
             Topic topic = await eventGridManagementClient.Topics.GetAsync(eventGridSubscriptionClientOptions.CurrentValue.ResourceGroup, eventGridSubscriptionClientOptions.CurrentValue.Topic);
             string eventSubscriptionScope = topic.Id;
@@ -90,36 +89,7 @@ namespace DFC.EventGridSubscriptions.Services
             logger.LogInformation("EventGrid event subscription deleted with name " + subscriptionName);
         }
 
-        private async Task<EventGridManagementClient> CreateEventGridManagementClient()
-        {
-            string token = await GetAuthorizationHeaderAsync();
-            TokenCredentials credential = new TokenCredentials(token);
-
-            EventGridManagementClient eventGridManagementClient = new EventGridManagementClient(credential)
-            {
-                SubscriptionId = eventGridSubscriptionClientOptions.CurrentValue.SubscriptionId
-            };
-
-            return eventGridManagementClient;
-        }
-
-        private async Task<string> GetAuthorizationHeaderAsync()
-        {
-            ClientCredential cc = new ClientCredential(eventGridSubscriptionClientOptions.CurrentValue.ApplicationId, eventGridSubscriptionClientOptions.CurrentValue.ClientSecret);
-            var context = new AuthenticationContext("https://login.windows.net/" + eventGridSubscriptionClientOptions.CurrentValue.TenantId);
-            var result = await context.AcquireTokenAsync("https://management.azure.com/", cc);
-
-            if (result == null)
-            {
-                throw new InvalidOperationException("Failed to obtain the JWT token. Please verify the values for your applicationId, Password, and Tenant.");
-            }
-
-            string token = result.AccessToken;
-            return token;
-
-        }
-
-        private async Task CreateEventGridEventSubscriptionAsync(string eventSubscriptionName, EventGridManagementClient eventGridMgmtClient, string endpointUrl, SubscriptionFilter? filter)
+        private async Task CreateEventGridEventSubscriptionAsync(string eventSubscriptionName, IEventGridManagementClient eventGridMgmtClient, string endpointUrl, SubscriptionFilter? filter)
         {
             Topic topic = await eventGridMgmtClient.Topics.GetAsync(eventGridSubscriptionClientOptions.CurrentValue.ResourceGroup, eventGridSubscriptionClientOptions.CurrentValue.Topic);
             string eventSubscriptionScope = topic.Id;
@@ -137,7 +107,8 @@ namespace DFC.EventGridSubscriptions.Services
                 {
                     IsSubjectCaseSensitive = false,
                     SubjectBeginsWith = filter.BeginsWith ?? "",
-                    SubjectEndsWith = filter.EndsWith ?? ""
+                    SubjectEndsWith = filter.EndsWith ?? "",
+                    IncludedEventTypes = filter.IncludeEventTypes ?? null
                 } : new EventSubscriptionFilter()
             };
 
