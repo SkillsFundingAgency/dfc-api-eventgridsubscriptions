@@ -43,7 +43,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             log.LogInformation("Subscription function execution started");
 
-            if (req == null || !req.Headers.Any())
+            if (req == null || req.Body == null)
             {
                 throw new ArgumentNullException(nameof(req));
             }
@@ -51,17 +51,31 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             switch (req.Method.ToUpperInvariant())
             {
                 case "POST":
-                    log.LogInformation("Function Creating Subscription");
-                    var bodyParameters = await GetBodyParametersAsync(req.Body).ConfigureAwait(false);
-                    var addResult = await subscriptionRegistrationService.AddSubscription(bodyParameters).ConfigureAwait(false);
-                    return new StatusCodeResult((int)addResult);
+                    return await HandlePostAsync(req, log).ConfigureAwait(false);
                 case "DELETE":
-                    log.LogInformation("Function Deleting Subscription");
-                    var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
-                    return new StatusCodeResult((int)deleteResult);
+                    return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
                 default:
                     return new StatusCodeResult(404);
             }
+        }
+
+        private static bool ValidateBodyParameters(SubscriptionRequest request, out string message)
+        {
+            message = string.Empty;
+
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                message = $"{nameof(request.Name)} not present in request";
+                return false;
+            }
+
+            if (request.Endpoint == null)
+            {
+                message = $"{nameof(request.Endpoint)} not present in request";
+                return false;
+            }
+
+            return true;
         }
 
         private static async Task<SubscriptionRequest> GetBodyParametersAsync(Stream body)
@@ -75,6 +89,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                 return subscriptionRequest;
             }
+        }
+
+        private async Task<IActionResult> HandleDeleteAsync(ILogger log, string subscriptionName)
+        {
+            log.LogInformation("Function Deleting Subscription");
+
+            if (string.IsNullOrWhiteSpace(subscriptionName))
+            {
+                return new BadRequestObjectResult($"{nameof(subscriptionName)} not present in request");
+            }
+
+            var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
+
+            return new ContentResult { StatusCode = (int)deleteResult };
+        }
+
+        private async Task<IActionResult> HandlePostAsync(HttpRequest req, ILogger log)
+        {
+            log.LogInformation("Function Creating Subscription");
+
+            var bodyParameters = await GetBodyParametersAsync(req.Body).ConfigureAwait(false);
+
+            var validBodyParameters = ValidateBodyParameters(bodyParameters, out string message);
+            if (!validBodyParameters)
+            {
+                return new BadRequestObjectResult(message);
+            }
+
+            var addResult = await subscriptionRegistrationService.AddSubscription(bodyParameters).ConfigureAwait(false);
+            return new StatusCodeResult((int)addResult);
         }
     }
 }

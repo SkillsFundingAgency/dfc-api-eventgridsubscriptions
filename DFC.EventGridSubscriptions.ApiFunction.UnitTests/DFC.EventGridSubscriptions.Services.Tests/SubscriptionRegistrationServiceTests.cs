@@ -23,7 +23,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         private readonly IEventGridManagementClientWrapper fakeClient = A.Fake<IEventGridManagementClientWrapper>();
 
         [Fact]
-        public async Task DoSomething()
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptionAddsSubscription()
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
@@ -36,6 +36,78 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             Assert.Equal(HttpStatusCode.Created, result);
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptionNullNameThrowsException()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null }));
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptionNullEndpointThrowsException()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = null, Name = "a-test-subscription" }));
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptionNullRequestThrowsException()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => serviceToTest.AddSubscription(null));
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenDeleteSubscriptionNullSubscriptionNameThrowsException()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => serviceToTest.DeleteSubscription(null));
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeClient.Subscription_DeleteAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenDeleteSubscriptionDeletesSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.DeleteSubscription("a-test-subscription");
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, result);
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Subscription_DeleteAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
         }
     }
 }

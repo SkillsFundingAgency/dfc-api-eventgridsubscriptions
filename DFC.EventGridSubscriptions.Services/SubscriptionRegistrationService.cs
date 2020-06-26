@@ -32,31 +32,31 @@ namespace DFC.EventGridSubscriptions.Services
         {
             try
             {
-                this.ValidateRequest(request);
+                if (request == null)
+                {
+                    throw new ArgumentNullException(nameof(request));
+                }
+
+                if (string.IsNullOrEmpty(request.Name))
+                {
+                    throw new ArgumentException(nameof(request.Name));
+                }
+
+                if (request.Endpoint == null)
+                {
+                    throw new ArgumentException(nameof(request.Name));
+                }
 
                 logger.LogInformation($"{nameof(AddSubscription)} called for subscription: {request.Name}");
 
-                await CreateEventGridEventSubscriptionAsync(request!.Name!, request!.Endpoint!.ToString(), request.Filter);
+                await CreateEventGridEventSubscriptionAsync(request.Name!, request.Endpoint!.ToString(), request.Filter);
 
                 return HttpStatusCode.Created;
             }
             catch (Exception ex)
             {
                 logger.LogError($"An error occured in {nameof(AddSubscription)} : {ex}");
-                return HttpStatusCode.InternalServerError;
-            }
-        }
-
-        private void ValidateRequest(SubscriptionRequest request)
-        {
-            if (string.IsNullOrEmpty(request.Name))
-            {
-                throw new ArgumentException(nameof(request.Name));
-            }
-
-            if(request.Endpoint == null)
-            {
-                throw new ArgumentException(nameof(request.Endpoint));
+                throw;
             }
         }
 
@@ -64,6 +64,11 @@ namespace DFC.EventGridSubscriptions.Services
         {
             try
             {
+                if (string.IsNullOrEmpty(subscriptionName))
+                {
+                    throw new ArgumentNullException(nameof(subscriptionName));
+                }
+
                 logger.LogInformation($"{nameof(DeleteSubscription)} called for subscription: {subscriptionName}");
 
                 await DeleteEventGridEventSubscriptionAsync(subscriptionName);
@@ -73,7 +78,7 @@ namespace DFC.EventGridSubscriptions.Services
             catch (Exception ex)
             {
                 logger.LogError($"An error occured in {nameof(DeleteSubscription)} : {ex}");
-                return HttpStatusCode.InternalServerError;
+                throw;
             }
         }
 
