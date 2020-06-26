@@ -11,6 +11,9 @@
         "SharedAppServicePlanResourceGroup": {
             "value": "dfc-dev-app-sharedresources-rg"
         },
+        "sharedKeyVaultRg": {
+            "value": "dfc-dev-app-sharedrsources-rg"
+        },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"
         }

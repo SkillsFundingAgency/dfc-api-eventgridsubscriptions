@@ -11,6 +11,9 @@
         "SharedAppServicePlanResourceGroup": {
             "value": "__appSharedResourceGroup__"
         },
+        "sharedKeyVaultRg": {
+            "value": "__sharedResourceGroup__"
+        },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
         }

@@ -13,6 +13,10 @@
             "type": "string",
             "defaultValue": ""
         },
+        "SharedKeyVaulRg": {
+            "type": "string",
+            "defaultValue": ""
+        },
         "SharedKeyVaultName": {
             "type": "string",
             "defaultValue": ""
@@ -105,15 +109,13 @@
                 },
                 "parameters": {
                     "keyVaultName": {
-                        "value": "[parameters('SharedKeyVaultName')]"
+                        "value": "[reference(resourceId(parameters('SharedKeyVaulRg'), 'Microsoft.KeyVault/vaults', parameters('SharedKeyVaultName')), '2018-07-01')]"
                     },
                     "servicePrincipalObjectId": {
                         "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
                     }
                 },
-            "dependsOn": [
-            "[variables('FunctionAppName')]"
-            ]
+            "dependsOn": ["[variables('FunctionAppName')]"]
             }
         }
     ],
