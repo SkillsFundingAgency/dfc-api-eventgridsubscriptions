@@ -88,6 +88,22 @@
                             {
                                 "name": "WEBSITE_RUN_FROM_PACKAGE",
                                 "value": "1"
+                            },
+                            {
+                                "name": "appregistration__id",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-id"
+                            },
+                            {
+                                "name": "appregistration__secret",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-secret"
+                            },
+                            {
+                                "name": "appregistration__tenantid",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-tenant-id"
+                            },
+                            {
+                                "name": "subscription_id",
+                                "value": "[subscription().id]"
                             }
                         ]
                     }
