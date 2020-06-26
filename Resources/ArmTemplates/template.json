@@ -13,7 +13,7 @@
             "type": "string",
             "defaultValue": ""
         },
-        "sharedKeyVaultName": {
+        "SharedKeyVaultName": {
             "type": "string",
             "defaultValue": ""
         }
@@ -104,8 +104,8 @@
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
-                    "sharedKeyVaultName": {
-                        "value": "[parameters('sharedKeyVaultName')]"
+                    "keyVaultName": {
+                        "value": "[parameters('SharedKeyVaultName')]"
                     },
                     "servicePrincipalObjectId": {
                         "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
