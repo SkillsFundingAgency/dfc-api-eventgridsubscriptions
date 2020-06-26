@@ -100,7 +100,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'keyvault/keyvault-access-policy.json')]",
+                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'KeyVault/keyvault-access-policy.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
