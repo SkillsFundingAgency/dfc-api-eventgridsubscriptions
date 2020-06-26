@@ -12,6 +12,10 @@
         "SharedAppServicePlanResourceGroup": {
             "type": "string",
             "defaultValue": ""
+        },
+        "sharedKeyVaultName": {
+            "type": "string",
+            "defaultValue": ""
         }
     },
     "variables": {
@@ -20,7 +24,8 @@
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
-        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]"
+        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
+        "KeyVaultAccessPolicyName": "[concat(variables('ResourcePrefix'), '-kap')]"
     },
     "resources": [
         {
@@ -87,6 +92,29 @@
             "dependsOn": [
                 "[variables('AppServiceAppInsightsName')]"
             ]
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[variables('KeyVaultAccessPolicyName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'keyvault/keyvault-access-policy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "sharedKeyVaultName": {
+                        "value": "[parameters('sharedKeyVaultName')]"
+                    },
+                    "servicePrincipalObjectId": {
+                        "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
+                    }
+                },
+            "dependsOn": [
+            "[variables('FunctionAppName')]"
+            ]
+            }
         }
     ],
     "outputs": {}
