@@ -1,15 +1,12 @@
-﻿using Castle.Core.Logging;
-using DFC.EventGridSubscriptions.Data;
+﻿using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using FakeItEasy;
-using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -36,6 +33,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             Assert.Equal(HttpStatusCode.Created, result);
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscription5AdvancedFiltersAddsSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { AdvancedFilters = A.CollectionOfFake<AdvancedFilter>(5).ToList() } });
+
+            //Assert
+            Assert.Equal(HttpStatusCode.Created, result);
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptioAdvancedFiltersGreaterThan5ThrowsException()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { AdvancedFilters = A.CollectionOfFake<AdvancedFilter>(6).ToList() } }));
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
         }
 
         [Fact]
