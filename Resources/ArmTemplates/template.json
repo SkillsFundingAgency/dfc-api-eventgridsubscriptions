@@ -104,6 +104,10 @@
                             {
                                 "name": "subscription_id",
                                 "value": "[subscription().subscriptionId]"
+                            },
+                            {
+                                "name": "keyvault_name",
+                                "value": "[parameters('SharedKeyVaultName')]"
                             }
                         ]
                     }
