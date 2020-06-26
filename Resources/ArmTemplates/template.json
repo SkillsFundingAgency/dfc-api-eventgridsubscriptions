@@ -109,7 +109,7 @@
                 },
                 "parameters": {
                     "keyVaultName": {
-                        "value": "[reference(resourceId(parameters('SharedKeyVaultRg'), 'Microsoft.KeyVault/vaults', parameters('SharedKeyVaultName')), '2019-09-01')]"
+                        "value": "[string(reference(resourceId(parameters('SharedKeyVaultRg'), 'Microsoft.KeyVault/vaults', parameters('SharedKeyVaultName')), '2019-09-01'))]"
                     },
                     "servicePrincipalObjectId": {
                         "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
