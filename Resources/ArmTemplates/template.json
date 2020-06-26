@@ -103,7 +103,7 @@
                             },
                             {
                                 "name": "subscription_id",
-                                "value": "[subscription().id]"
+                                "value": "[subscription().subscriptionId]"
                             }
                         ]
                     }
