@@ -1,15 +1,10 @@
 ﻿using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
-using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Azure.Management.EventGrid.Models;
-using Microsoft.Azure.Management.ResourceManager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Rest;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -113,7 +108,8 @@ namespace DFC.EventGridSubscriptions.Services
                     IsSubjectCaseSensitive = false,
                     SubjectBeginsWith = filter.BeginsWith ?? "",
                     SubjectEndsWith = filter.EndsWith ?? "",
-                    IncludedEventTypes = filter.IncludeEventTypes ?? null
+                    IncludedEventTypes = filter.IncludeEventTypes ?? null,
+                    AdvancedFilters = filter.AdvancedFilters ?? null
                 } : new EventSubscriptionFilter()
             };
 

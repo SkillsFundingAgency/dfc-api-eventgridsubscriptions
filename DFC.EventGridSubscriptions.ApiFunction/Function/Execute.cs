@@ -75,6 +75,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 return false;
             }
 
+            //No more than 5 advanced filters are supported by Event Grid
+            if(request.Filter != null && request.Filter.AdvancedFilters != null && request.Filter.AdvancedFilters.Count > 5)
+            {
+                message = $"{nameof(request.Filter.AdvancedFilters)} cannot provide more than 5 advanced filters";
+            }
+
             return true;
         }
 
