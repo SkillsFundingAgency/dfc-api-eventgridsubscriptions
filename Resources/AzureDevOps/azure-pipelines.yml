@@ -34,16 +34,16 @@ stages:
 
   
   #Build and test application
-  - job: BuildDotNet
-    displayName: "Build the dotnet core application"
-    workspace:
-      clean: all
-    pool: 'NCS - CI and CD'
-    steps:
-    - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-dotnetcore-build-sonar.yml@dfc-devops
-      parameters:
-        SolutionBaseName: $(SolutionBaseName).
-        BuildPlatform: 'any cpu'
-        BuildConfiguration: 'release'
-        DotNetCoreVersion: '3.1.201'
-        TestSuffix: UnitTests
+  # - job: BuildDotNet
+  #   displayName: "Build the dotnet core application"
+  #   workspace:
+  #     clean: all
+  #   pool: 'NCS - CI and CD'
+  #   steps:
+  #   - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-dotnetcore-build-sonar.yml@dfc-devops
+  #     parameters:
+  #       SolutionBaseName: $(SolutionBaseName).
+  #       BuildPlatform: 'any cpu'
+  #       BuildConfiguration: 'release'
+  #       DotNetCoreVersion: '3.1.201'
+  #       TestSuffix: UnitTests
