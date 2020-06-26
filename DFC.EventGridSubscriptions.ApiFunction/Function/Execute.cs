@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace DFC.EventGridSubscriptions.ApiFunction
 {
@@ -41,21 +42,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", "delete", Route = "Execute/{subscriptionName?}")] HttpRequest req, ILogger log, string subscriptionName)
         {
-            log.LogInformation("Subscription function execution started");
-
-            if (req == null || req.Body == null)
+            try
             {
-                throw new ArgumentNullException(nameof(req));
+                log.LogInformation("Subscription function execution started");
+
+                if (req == null || req.Body == null)
+                {
+                    throw new ArgumentNullException(nameof(req));
+                }
+
+                switch (req.Method.ToUpperInvariant())
+                {
+                    case "POST":
+                        return await HandlePostAsync(req, log).ConfigureAwait(false);
+                    case "DELETE":
+                        return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
+                    default:
+                        return new StatusCodeResult(404);
+                }
             }
-
-            switch (req.Method.ToUpperInvariant())
+            catch (ApiFunctionException e)
             {
-                case "POST":
-                    return await HandlePostAsync(req, log).ConfigureAwait(false);
-                case "DELETE":
-                    return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
-                default:
-                    return new StatusCodeResult(404);
+                log.LogError(e.ToString());
+                return e.ActionResult ?? new InternalServerErrorResult();
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                log.LogError(e.ToString());
+                return new InternalServerErrorResult();
             }
         }
 
