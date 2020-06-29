@@ -64,3 +64,6 @@ The key the property to apply the filter on.
 At the time of writing the limits for advanced filters are as follows:
 - 5 Advanced filters per Event Grid Topic Subscription
 - 25 values in an Advanced Filter item collection, across all applied advanced filters
+
+More information can be found here:
+https://docs.microsoft.com/en-us/azure/event-grid/event-filtering
