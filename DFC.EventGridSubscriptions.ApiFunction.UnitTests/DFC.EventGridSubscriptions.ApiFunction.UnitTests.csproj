@@ -15,7 +15,4 @@
     <ProjectReference Include="..\DFC.EventGridSubscriptions.ApiFunction\DFC.EventGridSubscriptions.ApiFunction.csproj" />
     <ProjectReference Include="..\DFC.EventGridSubscriptions.Services\DFC.EventGridSubscriptions.Services.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Test Data\" />
-  </ItemGroup>
 </Project>
