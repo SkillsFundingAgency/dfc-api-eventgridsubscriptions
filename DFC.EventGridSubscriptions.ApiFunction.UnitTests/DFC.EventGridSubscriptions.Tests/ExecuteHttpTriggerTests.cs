@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -170,12 +169,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return await _executeFunction.Run(_request, _log, subscriptionName).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool insludeAdvancedFilter, bool includeName)
+        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName)
         {
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
-                Endpoint = new Uri("http://somewhere.com/somewebhook/receive"),
-                Filter = new SubscriptionFilter { BeginsWith = "abeginswith", EndsWith = "anendswith", SubjectContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) },
+                Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
+                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith"  : null, SubjectContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
                 Name = "A-Test-Subscription"
             });
         }
