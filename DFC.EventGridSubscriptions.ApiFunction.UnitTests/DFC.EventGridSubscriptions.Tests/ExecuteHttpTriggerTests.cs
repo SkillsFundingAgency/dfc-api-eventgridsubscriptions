@@ -132,7 +132,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
-            CreatedResult result = (CreatedResult)await RunFunction("test-subscription-name");
+            CreatedResult result = (CreatedResult)await RunFunction(null);
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
@@ -146,6 +146,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsInternalServerErrorResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.InternalServerError);
+            A.CallTo(() => _request.Method).Returns("DELETE");
 
             //Act
             InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction("test-subscription-name");
@@ -163,7 +177,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
@@ -178,7 +192,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
@@ -193,7 +207,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
 
             //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
@@ -211,6 +225,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsGenericInternalServerErrorResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<ArithmeticException>();
+            A.CallTo(() => _request.Method).Returns("DELETE");
+
+            //Act
+            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
         }
 
         [Fact]
