@@ -71,7 +71,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                     case "DELETE":
                         return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
                     default:
-                        return new StatusCodeResult(404);
+                        return new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant());
                 }
             }
             catch (ArgumentNullException e)
@@ -138,7 +138,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
             var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
 
-            return new ContentResult { StatusCode = (int)deleteResult };
+            if (deleteResult == System.Net.HttpStatusCode.OK)
+            {
+                return new OkObjectResult(subscriptionName);
+            }
+
+            return new InternalServerErrorResult();
         }
 
         private async Task<IActionResult> HandlePostAsync(HttpRequest req, ILogger log)
@@ -154,7 +159,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             var addResult = await subscriptionRegistrationService.AddSubscription(bodyParameters).ConfigureAwait(false);
-            return new StatusCodeResult((int)addResult);
+
+            if (addResult == System.Net.HttpStatusCode.Created)
+            {
+                //Not ideal but do not want to mix return types
+                return new CreatedResult(string.Empty, string.Empty);
+            }
+
+            return new InternalServerErrorResult();
         }
     }
 }

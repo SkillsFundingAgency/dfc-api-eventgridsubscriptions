@@ -106,7 +106,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledReturns201StatusCode()
+        public async Task ExecuteWhenAddSubscriptionCalledReturnsCreatedResult()
         {
             //Arrange
             A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
@@ -115,51 +115,55 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
-            StatusCodeResult result = (StatusCodeResult)await RunFunction("test-subscription-name");
+            CreatedResult result = (CreatedResult)await RunFunction("test-subscription-name");
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
         }
 
-        //[Fact]
-        //public async Task Execute_GetAllPages_ReturnsCorrectJsonResponse()
-        //{
-        //    var recordJsonInput = File.ReadAllText(Directory.GetCurrentDirectory() + "/Files/Input/PageRecordInput_GetAll.json");
-        //    var expectedJsonOutput = File.ReadAllText(Directory.GetCurrentDirectory() + "/Files/Output/PageRecordOutput_GetAll.json");
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
 
-        //    A.CallTo(() => _graphDatabase.Run(A<GenericCypherQuery>.Ignored, A<string>.Ignored)).Returns(new List<IRecord>() { new Api.Content.UnitTests.Models.Record(new string[] { "data.properties" }, new object[] { JsonConvert.DeserializeObject<Dictionary<string, object>>(recordJsonInput.ToString()) }) });
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
 
-        //    var result = await RunFunction("test1", null);
-        //    var okObjectResult = result as OkObjectResult;
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
 
-        //    // Assert
-        //    Assert.True(result is OkObjectResult);
+        [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsOkObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.OK);
+            A.CallTo(() => _request.Method).Returns("DELETE");
 
-        //    var resultJson = JsonConvert.SerializeObject(okObjectResult.Value);
+            //Act
+            OkObjectResult result = (OkObjectResult)await RunFunction("test-subscription-name");
 
-        //    var equal = JToken.DeepEquals(JToken.Parse(expectedJsonOutput), JToken.Parse(resultJson));
-        //    Assert.True(equal);
-        //}
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
+        }
 
-        //[Fact]
-        //public async Task Execute_GetPage_ReturnsCorrectJsonResponse()
-        //{
-        //    var recordJsonInput = File.ReadAllText(Directory.GetCurrentDirectory() + "/Files/Input/PageRecordInput_GetById.json");
-        //    var expectedJsonOutput = File.ReadAllText(Directory.GetCurrentDirectory() + "/Files/Output/PageRecordOutput_GetById.json");
+        [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledNullSubscriptionNameReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.OK);
+            A.CallTo(() => _request.Method).Returns("DELETE");
 
-        //    var driverRecords = new List<IRecord>() { new Api.Content.UnitTests.Models.Record(new string[] { "values" }, new object[] { JsonConvert.DeserializeObject<Dictionary<string, object>>(recordJsonInput.ToString()) }) };
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
 
-        //    A.CallTo(() => _graphDatabase.Run(A<GenericCypherQuery>.Ignored, A<string>.Ignored)).Returns(driverRecords);
-
-        //    var result = await RunFunction("test1", Guid.NewGuid());
-        //    var okObjectResult = result as OkObjectResult;
-
-        //    // Assert
-        //    Assert.True(result is OkObjectResult);
-
-        //    var equal = JToken.DeepEquals(JToken.Parse(okObjectResult.Value.ToString()), JToken.Parse(expectedJsonOutput));
-        //    Assert.True(equal);
-        //}
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
 
         private async Task<IActionResult> RunFunction(string subscriptionName)
         {
