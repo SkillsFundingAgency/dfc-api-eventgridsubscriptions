@@ -1,11 +1,7 @@
-﻿using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Services;
+﻿using DFC.EventGridSubscriptions.Services;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Rest;
 using System;
 using System.Threading.Tasks;
 
