@@ -22,8 +22,10 @@ pool:
 stages:
 - stage: Build
   jobs:
+
+  #Build and test the arm template
   - job: BuildArmTemplates
-    displayName: "Build the ARM templates"
+    displayName: "Build and test ARM template"
     workspace:
       clean: all
     pool: 'NCS - CI and CD'
@@ -42,7 +44,10 @@ stages:
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)/Resources/PSScripts
         artifactName: Dfc.Shared.Resources.PSScripts
+
+  #Build and test the application
   - job: BuildTestAndAnalyze
+    displayName: "Build and test application"
     pool:
       name: NCS - CI and CD
       demands:
