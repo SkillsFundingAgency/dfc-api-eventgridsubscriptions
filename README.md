@@ -1,28 +1,66 @@
-# Project template repository
-
-This directory contains a "template repo" for creating new repositories from.
-
-It defaults to .dotnet core 2.2, but if you update global.json, it will support netcore 3.0 and 3.1.
-
-When using this,  please run
-
-`Scripts\New-InitialDotNetCoreProjects.ps1 -Prefix <project name> -ProjectType <project type>`
-
-to create the project structure and correctly populate the project guids in the csproj files.
-
-Supported project types are currently:
-
-* mvc
-* console
-* classlib
-* function
-
-Then delete this section, and remove the Scripts folder from the repo.
-
-Then it can be PR'd into the appropriate branch
-
-# SomeProjectName
+# Digital First Careers – Subscriptions API
 
 ## Introduction
+This is a function app that allows consumers to create and remove subscriptions to an Event Grid Topic.
 
-An introduction to the project goes here!
+## Getting Started
+
+### Installing
+
+Clone the project and open the solution in Visual Studio 2019.
+
+## List of dependencies
+
+|Item	|Purpose|
+|-------|-------|
+|Event Grid Topic | An Event Grid Topic to subscribe / delete |
+
+## Local Config Files
+
+## Configuring to run locally
+
+The project contains a number of "appsettings-template.json" files which contain sample appsettings for the web app and the test projects. To use these files, rename them to "appsettings.json" and edit and replace the configuration item values with values suitable for your environment.
+
+## Running locally
+
+To run this product locally, you will need to configure the list of dependencies, once configured and the configuration files updated, it should be F5 to run and debug locally. The application can be run using IIS Express or full IIS.
+
+## Deployments
+
+This API is deployed via an Azure DevOps release pipeline.
+
+## Built With
+
+* Microsoft Visual Studio 2019
+* .Net Core 3.1
+
+## References
+
+Supported API Endpoints:
+
+1) POST - /Execute
+    Body:
+```
+{
+    "Name":"test-subscription",
+    "Endpoint":"https://somewhere.azurewebsites.net/api/webhook/receiveevents",
+    "Filter":{
+        "BeginsWith":"atestbeginswith",
+        "EndsWith":"atestendswith",
+        "IncludeEventTypes":["blobcreated","contentcreated"],
+        "PropertyContainsFilter":{"key":"subject", "values":["guid1","guid2","emails"]}
+    }
+}
+```
+2) DELETE - /Execute/{subscriptionName}
+
+Please note, as AdvancedFilters are all derived types, the list of advanced filters has to be constructed in code.
+
+Currently the only supported Advanced Filter as part of this solution is StringInAdvanced Filter, as outlined here:
+https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.eventgrid.models.stringinadvancedfilter?view=azure-dotnet
+
+The key the property to apply the filter on.
+
+At the time of writing the limits for advanced filters are as follows:
+- 5 Advanced filters per Event Grid Topic Subscription
+- 25 values in an Advanced Filter item collection, across all applied advanced filters
