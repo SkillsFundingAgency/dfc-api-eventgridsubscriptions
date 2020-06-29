@@ -14,6 +14,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Xunit;
 
 namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscriptions.Tests
@@ -88,6 +89,23 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecutePutWhenPutRequestUnprocessableEntityObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("PUT");
+
+            //Act
+            var result = await RunFunction("test-subscription");
+
+            var unprocessableEntityObjectResult = result as UnprocessableEntityObjectResult;
+
+            // Assert
+            Assert.IsAssignableFrom<IActionResult>(result);
+            Assert.True(result is UnprocessableEntityObjectResult);
+            Assert.Equal((int?)HttpStatusCode.UnprocessableEntity, unprocessableEntityObjectResult.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecutePostWhenZeroLengthBodyBadRequestObjectResult()
         {
             //Arrange
@@ -121,10 +139,55 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledReturnsInternalServerErrorResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.InternalServerError);
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionNoSubscriptionNameCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionNoEndpointCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(false, true, true, true))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
         {
             //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
@@ -175,7 +238,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             {
                 Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
                 Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith"  : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
-                Name = "A-Test-Subscription"
+                Name = includeName ? "A-Test-Subscription" : null
             });
         }
     }

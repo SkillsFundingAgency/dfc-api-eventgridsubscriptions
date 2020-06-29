@@ -54,25 +54,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                     throw new ArgumentNullException(nameof(req));
                 }
 
-                switch (req.Method.ToUpperInvariant())
+                return req.Method.ToUpperInvariant() switch
                 {
-                    case "POST":
-                        if (req.Body == null || req.Body.Length == 0)
-                        {
-                            throw new ArgumentException(nameof(req.Body));
-                        }
-
-                        return await HandlePostAsync(req, log).ConfigureAwait(false);
-                    case "DELETE":
-                        if (string.IsNullOrWhiteSpace(subscriptionName))
-                        {
-                            throw new ArgumentNullException(nameof(subscriptionName));
-                        }
-
-                        return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
-                    default:
-                        return new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant());
-                }
+                    "POST" => await HandlePostAsync(req, log).ConfigureAwait(false),
+                    "DELETE" => await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false),
+                    _ => new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant()),
+                };
             }
             catch (ArgumentNullException e)
             {
@@ -138,7 +125,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
             if (string.IsNullOrWhiteSpace(subscriptionName))
             {
-                return new BadRequestObjectResult($"{nameof(subscriptionName)} not present in request");
+                throw new ArgumentNullException(nameof(subscriptionName));
             }
 
             var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
@@ -154,6 +141,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         private async Task<IActionResult> HandlePostAsync(HttpRequest req, ILogger log)
         {
             log.LogInformation("Function Creating Subscription");
+
+            if (req.Body == null || req.Body.Length == 0)
+            {
+                throw new ArgumentException(nameof(req.Body));
+            }
 
             var bodyParameters = await GetBodyParametersAsync(req.Body).ConfigureAwait(false);
 
