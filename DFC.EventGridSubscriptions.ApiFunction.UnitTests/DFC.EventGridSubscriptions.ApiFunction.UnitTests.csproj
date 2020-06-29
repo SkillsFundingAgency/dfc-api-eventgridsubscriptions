@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <ProjectGuid>{854A6102-05BC-4842-8E9B-C8A6087F7A18}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="6.1.0" />
