@@ -43,7 +43,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
 
             //Act
-            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { AdvancedFilters = A.CollectionOfFake<AdvancedFilter>(5).ToList() } });
+            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", A.CollectionOfFake<string>(5).ToList()) } });
 
             //Assert
             Assert.Equal(HttpStatusCode.Created, result);
@@ -60,7 +60,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             //Act
             //Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { AdvancedFilters = A.CollectionOfFake<AdvancedFilter>(6).ToList() } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", A.CollectionOfFake<string>(6).ToList()) } }));
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
         }
