@@ -1,15 +1,15 @@
-﻿using DFC.EventGridSubscriptions.Data.Models;
+﻿using DFC.EventGridSubscriptions.Data;
+using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -21,14 +21,17 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     public class Execute
     {
         private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Execute"/> class.
         /// </summary>
         /// <param name="subscriptionRegistrationService">A Subscription Registration Service.</param>
-        public Execute(ISubscriptionRegistrationService subscriptionRegistrationService)
+        /// <param name="advancedFilterOptions">The Advanced Filter Options.</param>
+        public Execute(ISubscriptionRegistrationService subscriptionRegistrationService, IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions)
         {
             this.subscriptionRegistrationService = subscriptionRegistrationService;
+            this.advancedFilterOptions = advancedFilterOptions;
         }
 
         /// <summary>
@@ -46,7 +49,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             {
                 log.LogInformation("Subscription function execution started");
 
-                if (req == null || req.Body == null)
+                if (string.IsNullOrWhiteSpace(subscriptionName))
+                {
+                    throw new ArgumentNullException(nameof(subscriptionName));
+                }
+
+                if (req == null || string.IsNullOrEmpty(req.Method))
                 {
                     throw new ArgumentNullException(nameof(req));
                 }
@@ -54,17 +62,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 switch (req.Method.ToUpperInvariant())
                 {
                     case "POST":
+                        if (req.Body == null || req.Body.Length == 0)
+                        {
+                            throw new ArgumentException(nameof(req.Body));
+                        }
+
                         return await HandlePostAsync(req, log).ConfigureAwait(false);
                     case "DELETE":
                         return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
                     default:
-                        return new StatusCodeResult(404);
+                        return new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant());
                 }
             }
-            catch (ApiFunctionException e)
+            catch (ArgumentNullException e)
             {
                 log.LogError(e.ToString());
-                return e.ActionResult ?? new InternalServerErrorResult();
+                return new BadRequestObjectResult(e);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
@@ -75,7 +88,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
         }
 
-        private static bool ValidateBodyParameters(SubscriptionRequest request, out string message)
+        private static async Task<SubscriptionRequest> GetBodyParametersAsync(Stream body)
+        {
+            using (var stream = new StreamReader(body))
+            {
+                var content = await stream.ReadToEndAsync().ConfigureAwait(false);
+
+                //Extract Request Body and Parse To Class
+                SubscriptionRequest subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(content);
+
+                return subscriptionRequest;
+            }
+        }
+
+        private bool ValidateBodyParameters(SubscriptionRequest request, out string message)
         {
             message = string.Empty;
 
@@ -92,25 +118,13 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             //No more than 5 advanced filters are supported by Event Grid
-            if (request.Filter != null && request.Filter.AdvancedFilters != null && request.Filter.AdvancedFilters.Count > 5)
+            if (request.Filter != null && request.Filter.SubjectContainsFilter != null && request.Filter.SubjectContainsFilter.Values.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
             {
-                message = $"{nameof(request.Filter.AdvancedFilters)} cannot provide more than 5 advanced filters";
+                message = $"{nameof(request.Filter.SubjectContainsFilter)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                return false;
             }
 
             return true;
-        }
-
-        private static async Task<SubscriptionRequest> GetBodyParametersAsync(Stream body)
-        {
-            using (var stream = new StreamReader(body))
-            {
-                var content = await stream.ReadToEndAsync().ConfigureAwait(false);
-
-                //Extract Request Body and Parse To Class
-                SubscriptionRequest subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(content);
-
-                return subscriptionRequest;
-            }
         }
 
         private async Task<IActionResult> HandleDeleteAsync(ILogger log, string subscriptionName)
@@ -124,7 +138,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
             var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
 
-            return new ContentResult { StatusCode = (int)deleteResult };
+            if (deleteResult == System.Net.HttpStatusCode.OK)
+            {
+                return new OkObjectResult(subscriptionName);
+            }
+
+            return new InternalServerErrorResult();
         }
 
         private async Task<IActionResult> HandlePostAsync(HttpRequest req, ILogger log)
@@ -140,7 +159,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             var addResult = await subscriptionRegistrationService.AddSubscription(bodyParameters).ConfigureAwait(false);
-            return new StatusCodeResult((int)addResult);
+
+            if (addResult == System.Net.HttpStatusCode.Created)
+            {
+                //Not ideal but do not want to mix return types
+                return new CreatedResult(string.Empty, string.Empty);
+            }
+
+            return new InternalServerErrorResult();
         }
     }
 }

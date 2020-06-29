@@ -9,11 +9,12 @@
             The Execute Function.
             </summary>
         </member>
-        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.#ctor(DFC.EventGridSubscriptions.Services.Interface.ISubscriptionRegistrationService)">
+        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.#ctor(DFC.EventGridSubscriptions.Services.Interface.ISubscriptionRegistrationService,Microsoft.Extensions.Options.IOptionsMonitor{DFC.EventGridSubscriptions.Data.AdvancedFilterOptions})">
             <summary>
             Initializes a new instance of the <see cref="T:DFC.EventGridSubscriptions.ApiFunction.Execute"/> class.
             </summary>
             <param name="subscriptionRegistrationService">A Subscription Registration Service.</param>
+            <param name="advancedFilterOptions">The Advanced Filter Options.</param>
         </member>
         <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.Run(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.Extensions.Logging.ILogger,System.String)">
             <summary>

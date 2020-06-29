@@ -44,6 +44,9 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
 
             builder.Services.AddOptions<EventGridSubscriptionClientOptions>()
                 .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("EventGridSubscriptionClientOptions").Bind(settings); });
+
+            builder.Services.AddOptions<AdvancedFilterOptions>()
+               .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("AdvancedFilterOptions").Bind(settings); });
         }
     }
 }

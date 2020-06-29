@@ -5,6 +5,8 @@ using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -109,12 +111,26 @@ namespace DFC.EventGridSubscriptions.Services
                     SubjectBeginsWith = filter.BeginsWith ?? "",
                     SubjectEndsWith = filter.EndsWith ?? "",
                     IncludedEventTypes = filter.IncludeEventTypes ?? null,
-                    AdvancedFilters = filter.AdvancedFilters ?? null
+                    AdvancedFilters = BuildAdvancedFilters(filter),
                 } : new EventSubscriptionFilter()
             };
 
             EventSubscription createdEventSubscription = await eventGridManagementClient.Subscription_CreateOrUpdateAsync(eventSubscriptionScope, eventSubscriptionName, eventSubscription);
             logger.LogInformation("EventGrid event subscription created with name " + createdEventSubscription.Name);
+        }
+
+        private IList<AdvancedFilter> BuildAdvancedFilters(SubscriptionFilter filter)
+        {
+            if(filter.SubjectContainsFilter == null)
+            {
+                return new List<AdvancedFilter>();
+            }
+
+            var filterList = new List<AdvancedFilter>();
+
+            filterList.Add(filter.SubjectContainsFilter);
+
+            return filterList;
         }
     }
 }

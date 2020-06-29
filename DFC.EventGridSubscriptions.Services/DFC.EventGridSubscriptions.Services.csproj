@@ -5,6 +5,7 @@
     <CodeAnalysisRuleSet>../DFC.Digital.CodeAnalysis.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <ProjectGuid>{cd048434-9374-4254-b4f5-6377ea1437ec}</ProjectGuid>
   </PropertyGroup>
   
   <ItemGroup>
