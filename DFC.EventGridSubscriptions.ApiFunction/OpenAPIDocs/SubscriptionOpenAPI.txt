@@ -1,0 +1,81 @@
+﻿openapi: 3.0.1
+info:
+  title: DFC Subscription API
+  description: 'Add and Remove Subscriptions to Event Grid'
+  version: 1.0.0
+servers:
+- url: __FunctionAppUrl__
+paths:
+  /api/Execute/:
+    post:
+      tags:
+      - Subscription
+      summary: Add a subscription to Event Grid.
+      description: Returns all of a particular content type.
+      operationId: AddSubscription
+      requestBody:
+        description: The subscription to create
+        required: true
+        content:
+         application/json:
+          schema:
+            $ref: '#/components/schemas/SubscriptionRequest'
+      responses:
+        201:
+          description: created
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
+  /api/Execute/{subscriptionName}:
+    delete:
+      tags:
+      - Subscription
+      summary: Delete a subscription to Event Grid.
+      parameters:
+        - in: path
+          name: subscriptionName
+          schema:
+            type: string
+          required: true
+      description: Deletes a webhook subscription to an Event Grid Topic
+      operationId: DeleteSubscription
+      responses:
+        200:
+          description: Subscription Deleted.
+          content: {}
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
+components:
+  schemas:
+    SubscriptionRequest:
+      title: A subscription request
+      type: "object"
+      properties:
+        name:
+          type: string
+          description: The name of the subscriber
+        endpoint:
+          type: string
+          description: The endpoint of the Webhook URL
+        filter:
+          type: object
+          description: The subscription filter as per Event Grid Documentation
+          properties:
+            beginsWith:
+              description: The begins with filter
+              type: string
+            endsWith:
+              description: The ends with filter
+              type: string
+            includeEventTypes:
+              description: The included event types
+              type: array
+              items:
+               type: string
