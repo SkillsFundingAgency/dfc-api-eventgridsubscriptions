@@ -93,6 +93,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
         }
 
+        private static void ValidateDeleteParameters(string subscriptionName)
+        {
+            if (string.IsNullOrWhiteSpace(subscriptionName))
+            {
+                throw new ArgumentNullException(nameof(subscriptionName));
+            }
+        }
+
+        private static void ValidatePostParameters(HttpRequest req)
+        {
+            if (req.Body == null || req.Body.Length == 0)
+            {
+                throw new ArgumentException(nameof(req.Body));
+            }
+        }
+
         private bool ValidateBodyParameters(SubscriptionRequest request, out string message)
         {
             message = string.Empty;
@@ -123,10 +139,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             log.LogInformation("Function Deleting Subscription");
 
-            if (string.IsNullOrWhiteSpace(subscriptionName))
-            {
-                throw new ArgumentNullException(nameof(subscriptionName));
-            }
+            ValidateDeleteParameters(subscriptionName);
 
             var deleteResult = await subscriptionRegistrationService.DeleteSubscription(subscriptionName).ConfigureAwait(false);
 
@@ -142,10 +155,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             log.LogInformation("Function Creating Subscription");
 
-            if (req.Body == null || req.Body.Length == 0)
-            {
-                throw new ArgumentException(nameof(req.Body));
-            }
+            ValidatePostParameters(req);
 
             var bodyParameters = await GetBodyParametersAsync(req.Body).ConfigureAwait(false);
 
