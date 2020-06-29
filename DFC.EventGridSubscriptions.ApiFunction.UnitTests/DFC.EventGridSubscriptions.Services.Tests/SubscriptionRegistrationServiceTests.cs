@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -43,7 +44,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
 
             //Act
-            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", A.CollectionOfFake<string>(5).ToList()) } });
+            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c", "d", "e" }) } });
 
             //Assert
             Assert.Equal(HttpStatusCode.Created, result);
@@ -60,7 +61,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             //Act
             //Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", A.CollectionOfFake<string>(6).ToList()) } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { SubjectContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "1", "2", "3", "4", "5" }) } }));
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
         }

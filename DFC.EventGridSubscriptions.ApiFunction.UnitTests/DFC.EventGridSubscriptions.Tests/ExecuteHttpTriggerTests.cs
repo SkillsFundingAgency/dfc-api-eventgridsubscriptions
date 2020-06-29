@@ -24,18 +24,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         private readonly Execute _executeFunction;
         private readonly ILogger _log;
         private readonly HttpRequest _request;
-        private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> _EventGridSubscriptionClientOptions;
-        private readonly ISubscriptionRegistrationService _SubscriptionRegistrationService;
+        private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         public ExecuteHttpTriggerTests()
         {
             _request = A.Fake<HttpRequest>();
 
-            _SubscriptionRegistrationService = A.Fake<ISubscriptionRegistrationService>();
+            subscriptionRegistrationService = A.Fake<ISubscriptionRegistrationService>();
+
+            advancedFilterOptions = A.Fake<IOptionsMonitor<AdvancedFilterOptions>>();
 
             _log = A.Fake<ILogger>();
 
-            _executeFunction = new Execute(_SubscriptionRegistrationService, A.Fake<IOptionsMonitor<AdvancedFilterOptions>>());
+            _executeFunction = new Execute(subscriptionRegistrationService, advancedFilterOptions);
         }
 
         [Fact]
@@ -104,18 +106,18 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledReturns200StatusCode()
+        public async Task ExecuteWhenAddSubscriptionCalledReturns201StatusCode()
         {
             //Arrange
-            A.CallTo(() => _SubscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
             StatusCodeResult result = (StatusCodeResult)await RunFunction("test-subscription-name");
 
             // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
             Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
         }
 
@@ -170,7 +172,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             {
                 Endpoint = new Uri("http://somewhere.com/somewebhook/receive"),
                 Filter = new SubscriptionFilter { BeginsWith = "abeginswith", EndsWith = "anendswith", SubjectContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) },
-            Name = "A-Test-Subscription"
+                Name = "A-Test-Subscription"
             });
         }
     }
