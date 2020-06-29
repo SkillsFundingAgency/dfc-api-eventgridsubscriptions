@@ -184,7 +184,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionNoEndpointCalledReturnsBadRequestObjectResult()
+        public async Task ExecuteWhenAddSubscriptionCalledNoEndpointReturnsBadRequestObjectResult()
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
@@ -196,6 +196,23 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledNoAdvancedFilterReturnsCreatedObjectResult()
+        {
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, false, true))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            CreatedResult result = (CreatedResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
         }
 
         [Fact]
