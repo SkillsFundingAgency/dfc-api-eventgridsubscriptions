@@ -5,10 +5,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.Services
 {
+    [ExcludeFromCodeCoverage]
     public class SubscriptionClientFactory : ISubscriptionClientFactory
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionOptions;
