@@ -14,7 +14,7 @@ resources:
 
 stages:
 - stage: Build
-  displayName: Build,  Test and Analyze
+  displayName: Build, Test and Analyze
   jobs:
   - job: BuildTestAndAnalyze
     pool:
