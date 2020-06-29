@@ -121,14 +121,14 @@ namespace DFC.EventGridSubscriptions.Services
 
         private IList<AdvancedFilter> BuildAdvancedFilters(SubscriptionFilter filter)
         {
-            if(filter.SubjectContainsFilter == null)
+            if(filter.PropertyContainsFilter == null)
             {
                 return new List<AdvancedFilter>();
             }
 
             var filterList = new List<AdvancedFilter>();
 
-            filterList.Add(filter.SubjectContainsFilter);
+            filterList.Add(filter.PropertyContainsFilter);
 
             return filterList;
         }

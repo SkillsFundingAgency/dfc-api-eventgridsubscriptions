@@ -49,11 +49,6 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             {
                 log.LogInformation("Subscription function execution started");
 
-                if (string.IsNullOrWhiteSpace(subscriptionName))
-                {
-                    throw new ArgumentNullException(nameof(subscriptionName));
-                }
-
                 if (req == null || string.IsNullOrEmpty(req.Method))
                 {
                     throw new ArgumentNullException(nameof(req));
@@ -69,12 +64,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                         return await HandlePostAsync(req, log).ConfigureAwait(false);
                     case "DELETE":
+                        if (string.IsNullOrWhiteSpace(subscriptionName))
+                        {
+                            throw new ArgumentNullException(nameof(subscriptionName));
+                        }
+
                         return await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false);
                     default:
                         return new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant());
                 }
             }
             catch (ArgumentNullException e)
+            {
+                log.LogError(e.ToString());
+                return new BadRequestObjectResult(e);
+            }
+            catch (ArgumentException e)
             {
                 log.LogError(e.ToString());
                 return new BadRequestObjectResult(e);
@@ -118,9 +123,9 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             //No more than 5 advanced filters are supported by Event Grid
-            if (request.Filter != null && request.Filter.SubjectContainsFilter != null && request.Filter.SubjectContainsFilter.Values.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+            if (request.Filter != null && request.Filter.PropertyContainsFilter != null && request.Filter.PropertyContainsFilter.Values.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
             {
-                message = $"{nameof(request.Filter.SubjectContainsFilter)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                message = $"{nameof(request.Filter.PropertyContainsFilter)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
                 return false;
             }
 
@@ -140,7 +145,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
             if (deleteResult == System.Net.HttpStatusCode.OK)
             {
-                return new OkObjectResult(subscriptionName);
+                return new OkObjectResult(null);
             }
 
             return new InternalServerErrorResult();

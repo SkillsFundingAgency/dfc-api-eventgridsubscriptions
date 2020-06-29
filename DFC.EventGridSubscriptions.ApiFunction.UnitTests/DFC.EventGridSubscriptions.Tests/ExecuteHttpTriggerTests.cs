@@ -57,7 +57,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         public async Task ExecutePostWhenNullRequestMethodBadRequestObjectResult()
         {
             //Arrange
-            A.CallTo(() => _request.Method).Returns("test-subscription");
+            A.CallTo(() => _request.Method).Returns("POST");
 
             //Act
             var result = await RunFunction(null);
@@ -174,7 +174,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
                 Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
-                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith"  : null, SubjectContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
+                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith"  : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
                 Name = "A-Test-Subscription"
             });
         }
