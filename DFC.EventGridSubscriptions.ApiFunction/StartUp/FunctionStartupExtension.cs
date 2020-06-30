@@ -1,13 +1,11 @@
 ﻿using DFC.EventGridSubscriptions.ApiFunction.StartUp;
 using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services;
 using DFC.EventGridSubscriptions.Services.Extensions;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

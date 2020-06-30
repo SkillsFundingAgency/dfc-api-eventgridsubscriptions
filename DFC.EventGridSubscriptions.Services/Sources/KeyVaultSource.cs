@@ -1,8 +1,6 @@
-﻿using DFC.EventGridSubscriptions.Data.Models;
-using DFC.EventGridSubscriptions.Services.Interface;
+﻿using DFC.EventGridSubscriptions.Services.Interface;
 using DFC.EventGridSubscriptions.Services.Providers;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 
 namespace DFC.EventGridSubscriptions.Services.Sources

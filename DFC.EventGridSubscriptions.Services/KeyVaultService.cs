@@ -16,11 +16,11 @@ namespace DFC.EventGridSubscriptions.Services
             this.keyVaultAddress = keyVaultAddress;
         }
 
-        public async Task<string> GetSecretAsync(string key)
+        public async Task<string> GetSecretAsync(string keyVaultKey)
         {
             var azureServiceTokenProvider1 = new AzureServiceTokenProvider();
             var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider1.KeyVaultTokenCallback));
-            var secret = await kv.GetSecretAsync(keyVaultAddress, key);
+            var secret = await kv.GetSecretAsync(keyVaultAddress, keyVaultKey);
 
             return secret.Value;
         }
