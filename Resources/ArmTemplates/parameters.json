@@ -16,6 +16,12 @@
         },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
+        },
+        "EventGridResourceGroup": {
+            "value": "__eventGridResourceGroup__"
+        },
+        "EventGridTopicName": {
+            "value": "__eventGridTopicName__"
         }
     }
 }

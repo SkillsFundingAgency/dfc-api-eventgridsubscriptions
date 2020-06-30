@@ -16,6 +16,13 @@
         },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"
+        },
+        "EventGridResourceGroup": {
+            "value": "Event-Grid-Resource-Group"
+        },
+        "EventGridTopicName": {
+            "value": "Event-Grid-Topic-Name"
         }
+
     }
 }

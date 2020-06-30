@@ -20,7 +20,16 @@
         "SharedKeyVaultName": {
             "type": "string",
             "defaultValue": ""
+        },
+        "EventGridResourceGroup": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "EventGridTopicName": {
+            "type": "string",
+            "defaultValue": ""
         }
+
     },
     "variables": {
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
@@ -108,7 +117,15 @@
                             {
                                 "name": "keyvault_name",
                                 "value": "[parameters('SharedKeyVaultName')]"
-                            }
+                            },
+                            {
+                                "name": "eventgrid_resourcegroup",
+                                "value": "[parameters('EventGridResourceGroup')]"
+                            },
+                            {
+                                "name": "eventgrid_topicname",
+                                "value": "[parameters('EventGridTopicName')]"
+                            }                          
                         ]
                     }
                 }
