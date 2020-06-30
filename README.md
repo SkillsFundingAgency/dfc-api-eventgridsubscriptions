@@ -14,6 +14,12 @@ Clone the project and open the solution in Visual Studio 2019.
 |Item	|Purpose|
 |-------|-------|
 |Event Grid Topic | An Event Grid Topic to subscribe / delete |
+|Azure Subscription | Access to the Dev Azure subscription is required to access KeyVault.
+
+## Install Azure CLI
+1) https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+2) Open PowerShell and type 'az login' - follow the instructions and login to your Citizen account.
+3) As long as your Azure permissions are correct on the KeyVault the application should now run.
 
 ## Local Config Files
 
