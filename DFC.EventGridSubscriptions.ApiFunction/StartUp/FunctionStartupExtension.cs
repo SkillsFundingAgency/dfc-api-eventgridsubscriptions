@@ -45,13 +45,9 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             builder.Services.AddOptions<AdvancedFilterOptions>()
                .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("AdvancedFilterOptions").Bind(settings); });
 
-            builder.Services.AddOptions<KeyVaultOptions>()
-               .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("KeyVaultOptions").Bind(settings); });
-            builder.Services.AddKeyVaultClient(config["KeyVaultOptions:KeyVaultAddress"]);
             config = configBuilder.AddKeyVaultConfigurationProvider(config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>(), builder.Services.BuildServiceProvider()).Build();
 
             builder.Services.AddSingleton<IConfiguration>(config);
-
             builder.Services.AddTransient<ISubscriptionRegistrationService, SubscriptionRegistrationService>();
             builder.Services.AddEventGridManagementClient();
         }
