@@ -5,9 +5,14 @@
     <ProjectGuid>{854A6102-05BC-4842-8E9B-C8A6087F7A18}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FakeItEasy" Version="6.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <PackageReference Include="coverlet.collector" Version="1.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DFC.EventGridSubscriptions.ApiFunction\DFC.EventGridSubscriptions.ApiFunction.csproj" />
+    <ProjectReference Include="..\DFC.EventGridSubscriptions.Services\DFC.EventGridSubscriptions.Services.csproj" />
   </ItemGroup>
 </Project>

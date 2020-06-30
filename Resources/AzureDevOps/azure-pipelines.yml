@@ -2,6 +2,7 @@ variables:
     SolutionBaseName: 'DFC.EventGridSubscriptions.ApiFunction'
     BuildPlatform: 'any cpu'
     BuildConfiguration: 'release'
+    ArmTemplateRoot: '$(Build.SourcesDirectory)\Resources\ArmTemplates'
 
 resources:
   repositories:
@@ -9,14 +10,44 @@ resources:
   - repository: dfc-devops
     type: github
     name: SkillsFundingAgency/dfc-devops
-    ref: refs/tags/v1.8.5
+    ref: refs/tags/v1.11.2
     endpoint: 'GitHub (ESFA)'
+
+pool:
+  name: NCS - CI and CD
+  demands:
+    - msbuild
+    - visualstudio
 
 stages:
 - stage: Build
-  displayName: Build, Test and Analyze
   jobs:
+
+  #Build and test the arm template
+  - job: BuildArmTemplates
+    displayName: "Build and test ARM template"
+    workspace:
+      clean: all
+    pool: 'NCS - CI and CD'
+    steps:
+    - template: /AzureDevOpsTemplates/Build/StepTemplates/dfc-arm-build.yml@dfc-devops
+      parameters:
+        ArmTemplateRoot: "$(System.DefaultWorkingDirectory)/Resources/ArmTemplates"
+    - task: CopyFiles@2
+      displayName: 'Copy PSScripts Files to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        Contents: 'PSScripts/**/*.ps1'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/Resources/PSScripts'
+        flattenFolders: true
+    - task: PublishPipelineArtifact@0
+      displayName: Publish PSScripts Pipeline Artifact
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)/Resources/PSScripts
+        artifactName: Dfc.Shared.Resources.PSScripts
+
+  #Build and test the application
   - job: BuildTestAndAnalyze
+    displayName: "Build and test application"
     pool:
       name: NCS - CI and CD
       demands:
@@ -28,3 +59,6 @@ stages:
         SolutionBaseName: $(SolutionBaseName)
         BuildPlatform: 'any cpu'
         BuildConfiguration: 'release'
+        DotNetCoreVersion: 3.1.101
+        PublishWebApp: true
+        TestSuffix: UnitTests
