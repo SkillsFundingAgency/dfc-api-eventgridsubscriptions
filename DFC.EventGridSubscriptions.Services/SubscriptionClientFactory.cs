@@ -1,6 +1,7 @@
 ﻿using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
@@ -14,10 +15,12 @@ namespace DFC.EventGridSubscriptions.Services
     public class SubscriptionClientFactory : ISubscriptionClientFactory
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionOptions;
+        private readonly IConfiguration configuration;
 
-        public SubscriptionClientFactory(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionOptions)
+        public SubscriptionClientFactory(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionOptions, IConfiguration configuration)
         {
             this.eventGridSubscriptionOptions = eventGridSubscriptionOptions;
+            this.configuration = configuration;
         }
 
         public async Task<EventGridManagementClient> CreateClient()
@@ -40,8 +43,8 @@ namespace DFC.EventGridSubscriptions.Services
 
         private async Task<string> GetAuthorizationHeaderAsync()
         {
-            ClientCredential cc = new ClientCredential(eventGridSubscriptionOptions.CurrentValue.ApplicationId, eventGridSubscriptionOptions.CurrentValue.ClientSecret);
-            var context = new AuthenticationContext("https://login.windows.net/" + eventGridSubscriptionOptions.CurrentValue.TenantId);
+            ClientCredential cc = new ClientCredential(configuration["dfc-api-eventgridsubscriptions-appregistration-id"], configuration["dfc-api-eventgridsubscriptions-appregistration-secret"]);
+            var context = new AuthenticationContext("https://login.windows.net/" + configuration["dfc-api-eventgridsubscriptions-appregistration-tenant-id"]);
             var result = await context.AcquireTokenAsync("https://management.azure.com/", cc).ConfigureAwait(false);
 
             if (result == null)
