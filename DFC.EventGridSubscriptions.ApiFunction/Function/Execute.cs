@@ -187,8 +187,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 var result = await subscriptionRegistrationService.GetAllSubscriptions().ConfigureAwait(false);
                 return new OkObjectResult(result);
             }
-
-            return new OkObjectResult(string.Empty);
+            else
+            {
+                var result = await subscriptionRegistrationService.GetSubscription(subscriptionName).ConfigureAwait(false);
+                return new OkObjectResult(result);
+            }
         }
     }
 }

@@ -11,5 +11,7 @@ namespace DFC.EventGridSubscriptions.Services.Interface
         Task<HttpStatusCode> AddSubscription(SubscriptionRequest request);
         Task<HttpStatusCode> DeleteSubscription(string subscriptionName);
         Task<IEnumerable<EventSubscription>> GetAllSubscriptions();
+        Task<EventSubscription> GetSubscription(string subscriptionName);
+
     }
 }

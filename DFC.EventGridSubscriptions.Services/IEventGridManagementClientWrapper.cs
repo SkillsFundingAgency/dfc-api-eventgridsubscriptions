@@ -11,5 +11,6 @@ namespace DFC.EventGridSubscriptions.Services
         Task<Topic> Topic_GetAsync(string resourceGroupName, string topicName, CancellationToken cancellationToken = default);
         Task Subscription_DeleteAsync(string scope, string eventSubscriptionName, CancellationToken cancellationToken = default);
         Task<IEnumerable<EventSubscription>> Subscription_GetAllAsync(string resourceGroupName, string topicName, CancellationToken cancellationToken = default);
+        Task<EventSubscription> Subscription_GetByIdAsync(string scope, string subscriptionName, CancellationToken cancellationToken = default);
     }
 }

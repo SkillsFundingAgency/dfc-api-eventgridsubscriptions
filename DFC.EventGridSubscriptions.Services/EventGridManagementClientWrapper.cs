@@ -41,5 +41,11 @@ namespace DFC.EventGridSubscriptions.Services
             var result = await client.EventSubscriptions.ListByResourceAsync(resourceGroupName, string.Empty, "Microsoft.EventGrid", "/topics/" + topicName, null, null, cancellationToken);
             return result;
         }
+
+        public async Task<EventSubscription> Subscription_GetByIdAsync(string scope, string subscriptionName, CancellationToken cancellationToken = default)
+        {   
+            var result = await client.EventSubscriptions.GetAsync(scope, subscriptionName, cancellationToken);
+            return result;
+        }
     }
 }
