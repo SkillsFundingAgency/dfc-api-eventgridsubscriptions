@@ -1,10 +1,12 @@
 ﻿using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.Services
 {
+    [ExcludeFromCodeCoverage]
     public class KeyVaultService : IKeyVaultService
     {
         private readonly string keyVaultAddress;
