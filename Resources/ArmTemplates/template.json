@@ -161,29 +161,30 @@
             "dependsOn": [
                 "[variables('AppServiceAppInsightsName')]"
             ]
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "[variables('KeyVaultAccessPolicyName')]",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('SharedKeyVaultRg')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'KeyVault/keyvault-access-policy.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultName": {
-                        "value": "[parameters('SharedKeyVaultName')]"
-                    },
-                    "servicePrincipalObjectId": {
-                        "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
-                    }
-                },
-            "dependsOn": ["[variables('FunctionAppName')]"]
-            }
         }
+        // ,
+        // {
+        //     "apiVersion": "2017-05-10",
+        //     "name": "[variables('KeyVaultAccessPolicyName')]",
+        //     "type": "Microsoft.Resources/deployments",
+        //     "resourceGroup": "[parameters('SharedKeyVaultRg')]",
+        //     "properties": {
+        //         "mode": "Incremental",
+        //         "templateLink": {
+        //             "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'KeyVault/keyvault-access-policy.json')]",
+        //             "contentVersion": "1.0.0.0"
+        //         },
+        //         "parameters": {
+        //             "keyVaultName": {
+        //                 "value": "[parameters('SharedKeyVaultName')]"
+        //             },
+        //             "servicePrincipalObjectId": {
+        //                 "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
+        //             }
+        //         },
+        //     "dependsOn": ["[variables('FunctionAppName')]"]
+        //     }
+        // }
     ],
     "outputs": {}
     }
