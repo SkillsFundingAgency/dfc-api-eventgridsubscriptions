@@ -111,7 +111,7 @@
                                 "value": "dfc-api-eventgridsubscriptions-appregistration-tenant-id"
                             },
                             {
-                                "name": "subscription_id",
+                                "name": "EventGridSubscriptionClientOptions__SubscriptionId",
                                 "value": "[subscription().subscriptionId]"
                             },
                             {
@@ -119,11 +119,11 @@
                                 "value": "[parameters('SharedKeyVaultName')]"
                             },
                             {
-                                "name": "eventgrid_resourcegroup",
+                                "name": "EventGridSubscriptionClientOptions__ResourceGroup",
                                 "value": "[parameters('EventGridResourceGroup')]"
                             },
                             {
-                                "name": "eventgrid_topicname",
+                                "name": "EventGridSubscriptionClientOptions__TopicName",
                                 "value": "[parameters('EventGridTopicName')]"
                             }                          
                         ]
