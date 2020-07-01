@@ -122,39 +122,39 @@
                                 "name": "AzureWebJobsStorage",
                                 "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appSharedStorageAccountName'),';AccountKey=',listKeys(resourceId(parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
                             }
-                            // ,
-                            // {
-                            //     "name": "Logging__ApplicationInsights__LogLevel__Default",
-                            //     "value": "Information"
-                            // },
-                            // {
-                            //     "name": "appregistration__id",
-                            //     "value": "dfc-api-eventgridsubscriptions-appregistration-id"
-                            // },
-                            // {
-                            //     "name": "appregistration__secret",
-                            //     "value": "dfc-api-eventgridsubscriptions-appregistration-secret"
-                            // },
-                            // {
-                            //     "name": "appregistration__tenantid",
-                            //     "value": "dfc-api-eventgridsubscriptions-appregistration-tenant-id"
-                            // },
-                            // {
-                            //     "name": "EventGridSubscriptionClientOptions__SubscriptionId",
-                            //     "value": "[subscription().subscriptionId]"
-                            // },
-                            // {
-                            //     "name": "keyvault_name",
-                            //     "value": "[parameters('SharedKeyVaultName')]"
-                            // },
-                            // {
-                            //     "name": "EventGridSubscriptionClientOptions__ResourceGroup",
-                            //     "value": "[parameters('EventGridResourceGroup')]"
-                            // },
-                            // {
-                            //     "name": "EventGridSubscriptionClientOptions__TopicName",
-                            //     "value": "[parameters('EventGridTopicName')]"
-                            // }                          
+                            ,
+                            {
+                                "name": "Logging__ApplicationInsights__LogLevel__Default",
+                                "value": "Information"
+                            },
+                            {
+                                "name": "appregistration__id",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-id"
+                            },
+                            {
+                                "name": "appregistration__secret",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-secret"
+                            },
+                            {
+                                "name": "appregistration__tenantid",
+                                "value": "dfc-api-eventgridsubscriptions-appregistration-tenant-id"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__SubscriptionId",
+                                "value": "[subscription().subscriptionId]"
+                            },
+                            {
+                                "name": "keyvault_name",
+                                "value": "[parameters('SharedKeyVaultName')]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__ResourceGroup",
+                                "value": "[parameters('EventGridResourceGroup')]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__TopicName",
+                                "value": "[parameters('EventGridTopicName')]"
+                            }                          
                         ]
                     }
                 }
