@@ -2,8 +2,14 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "appSharedResourceGroup": {
+            "value": "__appSharedResourceGroup__"
+        },
         "Environment": {
             "value": "__ReleaseEnvironmentName__"
+        },
+        "appSharedStorageAccountName": {
+            "value": "__appSharedStorageAccountName__"
         },
         "SharedAppServicePlanName": {
             "value": "__sharedAppServicePlanName__"

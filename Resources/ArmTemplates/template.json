@@ -2,7 +2,13 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "appSharedResourceGroup": {
+            "type": "string"
+        },
         "Environment": {
+            "type": "string"
+        },
+        "appSharedStorageAccountName": {
             "type": "string"
         },
         "SharedAppServicePlanName": {
@@ -97,6 +103,10 @@
                             {
                                 "name": "WEBSITE_RUN_FROM_PACKAGE",
                                 "value": "1"
+                            },
+                            {
+                                "name": "AzureWebJobsStorage",
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appSharedStorageAccountName'),';AccountKey=',listKeys(resourceId(parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
                             },
                             {
                                 "name": "appregistration__id",
