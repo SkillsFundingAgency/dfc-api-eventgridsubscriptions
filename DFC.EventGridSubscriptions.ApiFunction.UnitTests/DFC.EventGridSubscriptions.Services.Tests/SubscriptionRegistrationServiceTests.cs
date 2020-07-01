@@ -137,5 +137,40 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => fakeClient.Subscription_DeleteAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
         }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenGetSubscriptionGetsSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new EventSubscription("someid", "a-test-subscription", "EventGridTopic"));
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.GetSubscription("a-test-subscription");
+
+            //Assert
+            Assert.Equal("someid", result.Id);
+            Assert.Equal("a-test-subscription", result.Name);
+            Assert.Equal("EventGridTopic", result.Type);
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenGetAllSubscriptionsGetsSubscriptions()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            A.CallTo(() => fakeClient.Subscription_GetAllAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new List<EventSubscription> { new EventSubscription("someid", "a-test-subscription-1", "EventGridTopic"), new EventSubscription("someid1", "a-test-subscription-2", "EventGridTopic") });
+            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.GetAllSubscriptions();
+
+            //Assert
+            Assert.Equal(2, result.Count());
+            A.CallTo(() => fakeClient.Subscription_GetAllAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
     }
 }
