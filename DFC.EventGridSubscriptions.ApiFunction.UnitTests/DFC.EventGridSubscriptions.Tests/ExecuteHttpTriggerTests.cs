@@ -245,6 +245,44 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenGetSubscriptionCalledReturnsOkObjectResultWithSubscription()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.GetSubscription(A<string>.Ignored)).Returns(new EventSubscription("testid", "testsubscription", "EventGridSubscription"));
+            A.CallTo(() => _request.Method).Returns("GET");
+
+            //Act
+            OkObjectResult result = (OkObjectResult)await RunFunction("test-subscription-name");
+
+            var resultAsSubscription = (EventSubscription)result.Value;
+
+            // Assert
+            Assert.IsAssignableFrom<EventSubscription>(result.Value);
+            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal("testid", resultAsSubscription.Id);
+            Assert.Equal("testsubscription", resultAsSubscription.Name);
+            Assert.Equal("EventGridSubscription", resultAsSubscription.Type);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenGetSubscriptionsCalledReturnsOkObjectResultWithSubscriptions()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.GetAllSubscriptions()).Returns(new List<EventSubscription>() { new EventSubscription("testid", "testsubscription", "EventGridSubscription"), new EventSubscription("testid-2", "testsubscription-2", "EventGridSubscription") });
+            A.CallTo(() => _request.Method).Returns("GET");
+
+            //Act
+            OkObjectResult result = (OkObjectResult)await RunFunction(string.Empty);
+
+            var resultAsSubscription = (List<EventSubscription>)result.Value;
+
+            // Assert
+            Assert.IsAssignableFrom<List<EventSubscription>>(result.Value);
+            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(2, resultAsSubscription.Count);
+        }
+
+        [Fact]
         public async Task ExecuteWhenDeleteSubscriptionCalledReturnsGenericInternalServerErrorResult()
         {
             //Arrange
@@ -282,7 +320,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
                 Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
-                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith"  : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
+                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
                 Name = includeName ? "A-Test-Subscription" : null
             });
         }

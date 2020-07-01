@@ -120,7 +120,7 @@ namespace DFC.EventGridSubscriptions.Services
 
         private IList<AdvancedFilter> BuildAdvancedFilters(SubscriptionFilter filter)
         {
-            if(filter.PropertyContainsFilter == null)
+            if (filter.PropertyContainsFilter == null)
             {
                 return new List<AdvancedFilter>();
             }
@@ -130,6 +130,21 @@ namespace DFC.EventGridSubscriptions.Services
             filterList.Add(filter.PropertyContainsFilter);
 
             return filterList;
+        }
+
+        public async Task<IEnumerable<EventSubscription>> GetAllSubscriptions()
+        {
+            var allSubscriptions = await eventGridManagementClient.Subscription_GetAllAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            return allSubscriptions;
+        }
+
+        public async Task<EventSubscription> GetSubscription(string subscriptionName)
+        {
+            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            string eventSubscriptionScope = topic.Id;
+
+            var subscription = await eventGridManagementClient.Subscription_GetByIdAsync(eventSubscriptionScope, subscriptionName);
+            return subscription;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿openapi: 3.0.1
 info:
   title: DFC Subscription API
-  description: 'Add and Remove Subscriptions to Event Grid'
+  description: 'Add, Get and Remove Subscriptions to an Event Grid Topic'
   version: 1.0.0
 servers:
 - url: __FunctionAppUrl__
@@ -29,7 +29,51 @@ paths:
         500:
           description: Missing App Settings or Config Files.
           content: {}
+    get:
+      tags:
+      - Subscription
+      summary: Get all subscriptions from Event Grid.
+      description: Gets all webhook subscriptions from an Event Grid Topic
+      operationId: GetSubscripions
+      responses:
+        200:
+          description: Subscriptions Reetrieved.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionArray'
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
   /api/Execute/{subscriptionName}:
+    get:
+      tags:
+      - Subscription
+      summary: Get a subscription from Event Grid.
+      parameters:
+        - in: path
+          name: subscriptionName
+          schema:
+            type: string
+          required: true
+      description: Gets a webhook subscription from an Event Grid Topic
+      operationId: GetSubscripionByName
+      responses:
+        200:
+          description: Subscription Reetrieved.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
     delete:
       tags:
       - Subscription
@@ -79,3 +123,151 @@ components:
               type: array
               items:
                type: string
+    SubscriptionResponse:
+      title: A single subscription response
+      type: object
+      properties:
+        properties.topic:
+          type: string
+        properties.provisioningState:
+          type: string
+        properties.destination:
+          type: object
+          properties:
+            properties.endpointUrl:
+              type: object
+              properties:
+                properties.endpointBaseUrl:
+                  type: string
+                properties.maxEventsPerBatch:
+                  type: number
+                properties.preferredBatchSizeInKilobytes:
+                  type: number
+                properties.azureActiveDirectoryTenantId:
+                  type: object
+                  properties:
+                    properties.azureActiveDirectoryApplicationIdOrUri:
+                      type: string
+        properties.filter:
+          type: object
+          properties:
+            subjectBeginsWith:
+              type: string
+            subjectEndsWith:
+              type: string
+            includedEventTypes:
+              type: array
+              items:
+                type: string
+            isSubjectCaseSensitive:
+              type: object
+              properties:
+                advancedFilters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      values:
+                        type: array
+                        items:
+                          type: string
+                      key:
+                        type: string
+        properties.labels:
+          type: string
+        properties.expirationTimeUtc:
+          type: string
+        properties.eventDeliverySchema:
+          type: string
+        properties.retryPolicy:
+          type: object
+          properties:
+              maxDeliveryAttempts:
+                type: number
+              eventTimeToLiveInMinutes:
+                type: number
+        properties.deadLetterDestination:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+    SubscriptionArray:
+      title: A subscription array response
+      type: object
+      properties:
+        nextLink:
+          type: string
+        value:
+          type: array
+          items:
+            properties:
+              properties.topic:
+                type: string
+              properties.provisioningState:
+                type: string
+              properties.destination:
+                type: object
+                properties:
+                  properties.endpointUrl:
+                    type: object
+                    properties:
+                      properties.endpointBaseUrl:
+                        type: string
+                      properties.maxEventsPerBatch:
+                        type: number
+                      properties.preferredBatchSizeInKilobytes:
+                        type: number
+                      properties.azureActiveDirectoryTenantId:
+                        type: object
+                        properties:
+                          properties.azureActiveDirectoryApplicationIdOrUri:
+                            type: string
+              properties.filter:
+                type: object
+                properties:
+                  subjectBeginsWith:
+                    type: string
+                  subjectEndsWith:
+                    type: string
+                  includedEventTypes:
+                    type: array
+                    items:
+                      type: string
+                  isSubjectCaseSensitive:
+                    type: object
+                    properties:
+                      advancedFilters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            key:
+                              type: string
+              properties.labels:
+                type: string
+              properties.expirationTimeUtc:
+                type: string
+              properties.eventDeliverySchema:
+                type: string
+              properties.retryPolicy:
+                type: object
+                properties:
+                    maxDeliveryAttempts:
+                      type: number
+                    eventTimeToLiveInMinutes:
+                      type: number
+              properties.deadLetterDestination:
+                type: string
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string

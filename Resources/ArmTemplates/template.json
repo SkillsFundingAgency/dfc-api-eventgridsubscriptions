@@ -20,7 +20,16 @@
         "SharedKeyVaultName": {
             "type": "string",
             "defaultValue": ""
+        },
+        "EventGridResourceGroup": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "EventGridTopicName": {
+            "type": "string",
+            "defaultValue": ""
         }
+
     },
     "variables": {
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
@@ -102,13 +111,21 @@
                                 "value": "dfc-api-eventgridsubscriptions-appregistration-tenant-id"
                             },
                             {
-                                "name": "subscription_id",
+                                "name": "EventGridSubscriptionClientOptions__SubscriptionId",
                                 "value": "[subscription().subscriptionId]"
                             },
                             {
                                 "name": "keyvault_name",
                                 "value": "[parameters('SharedKeyVaultName')]"
-                            }
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__ResourceGroup",
+                                "value": "[parameters('EventGridResourceGroup')]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__TopicName",
+                                "value": "[parameters('EventGridTopicName')]"
+                            }                          
                         ]
                     }
                 }

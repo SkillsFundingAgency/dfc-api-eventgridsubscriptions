@@ -23,6 +23,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             services.AddTransient<IEventGridManagementClient, EventGridManagementClient>(sp => { return GetClient(sp).GetAwaiter().GetResult(); });
         }
 
+        public static void AddKeyVaultClient(this IServiceCollection services, string keyVaultAddress)
+        {
+            services.AddSingleton<IKeyVaultService>(new KeyVaultService(keyVaultAddress));
+        }
+
         private static async Task<EventGridManagementClient> GetClient(IServiceProvider serviceProvider)
         {
             var subscriptionClientFactory = serviceProvider.GetRequiredService<ISubscriptionClientFactory>();
