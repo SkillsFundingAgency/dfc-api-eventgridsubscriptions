@@ -90,10 +90,28 @@
                     "appServiceType": {
                         "value": "functionapp"
                     },
+                    "deployStagingSlot": {
+                        "value": true
+                    },
+                    "clientAffinity": {
+                        "value": true
+                    },
                     "appServiceAppSettings": {
                         "value": [
+                           {
+                                "name": "FUNCTIONS_EXTENSION_VERSION",
+                                "value": "~3"
+                            },
+                            {
+                                "name": "FUNCTIONS_WORKER_RUNTIME",
+                                "value": "dotnet"
+                            },
                             {
                                 "name": "MSDEPLOY_RENAME_LOCKED_FILES",
+                                "value": "1"
+                            },
+                            {
+                                "name": "WEBSITE_RUN_FROM_PACKAGE",
                                 "value": "1"
                             },
                             {
@@ -101,12 +119,12 @@
                                 "value": "[reference(variables('AppServiceAppInsightsName')).outputs.InstrumentationKey.value]"
                             },
                             {
-                                "name": "WEBSITE_RUN_FROM_PACKAGE",
-                                "value": "1"
-                            },
-                            {
                                 "name": "AzureWebJobsStorage",
                                 "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appSharedStorageAccountName'),';AccountKey=',listKeys(resourceId(parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            },
+                            {
+                                "name": "Logging__ApplicationInsights__LogLevel__Default",
+                                "value": "Information"
                             },
                             {
                                 "name": "appregistration__id",
