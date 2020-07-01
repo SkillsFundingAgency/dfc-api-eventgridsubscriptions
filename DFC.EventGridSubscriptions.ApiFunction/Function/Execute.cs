@@ -43,7 +43,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         [FunctionName("Execute")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", "delete", Route = "Execute/{subscriptionName?}")] HttpRequest req, ILogger log, string subscriptionName)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", "delete", "get", Route = "Execute/{subscriptionName?}")] HttpRequest req, ILogger log, string subscriptionName)
         {
             try
             {
@@ -56,6 +56,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                 return req.Method.ToUpperInvariant() switch
                 {
+                    "GET" => await HandleGetAsync(log, subscriptionName).ConfigureAwait(false),
                     "POST" => await HandlePostAsync(req, log).ConfigureAwait(false),
                     "DELETE" => await HandleDeleteAsync(log, subscriptionName).ConfigureAwait(false),
                     _ => new UnprocessableEntityObjectResult(req.Method.ToUpperInvariant()),
@@ -174,6 +175,23 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             return new InternalServerErrorResult();
+        }
+
+        private async Task<IActionResult> HandleGetAsync(ILogger log, string subscriptionName)
+        {
+            log.LogInformation("Function getting subscriptions");
+
+            if (string.IsNullOrWhiteSpace(subscriptionName))
+            {
+                //Get All
+                var result = await subscriptionRegistrationService.GetAllSubscriptions().ConfigureAwait(false);
+                return new OkObjectResult(result);
+            }
+            else
+            {
+                var result = await subscriptionRegistrationService.GetSubscription(subscriptionName).ConfigureAwait(false);
+                return new OkObjectResult(result);
+            }
         }
     }
 }

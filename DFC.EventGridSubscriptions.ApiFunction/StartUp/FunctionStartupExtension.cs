@@ -43,6 +43,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             builder.Services.AddOptions<AdvancedFilterOptions>()
                .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("AdvancedFilterOptions").Bind(settings); });
 
+            builder.Services.AddKeyVaultClient($"https://{config["keyvault_name"]}.vault.azure.net");
             config = configBuilder.AddKeyVaultConfigurationProvider(config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>(), builder.Services.BuildServiceProvider()).Build();
 
             builder.Services.AddSingleton<IConfiguration>(config);
