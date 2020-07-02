@@ -4,5 +4,8 @@
     "http": {
       "routePrefix": ""
     }
+  },
+  "logging": {
+    "fileLoggingMode": "always"
   }
 }

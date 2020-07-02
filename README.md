@@ -60,6 +60,10 @@ Supported API Endpoints:
 ```
 2) DELETE - /Execute/{subscriptionName}
 
+3) GET - /Execute
+
+4) GET - /Execute/{subscriptionName}
+
 Please note, as AdvancedFilters are all derived types, the list of advanced filters has to be constructed in code.
 
 Currently the only supported Advanced Filter as part of this solution is StringInAdvanced Filter, as outlined here:
