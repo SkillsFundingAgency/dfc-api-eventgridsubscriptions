@@ -184,6 +184,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenAddSubscriptionShortSubscriptionNameCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false, "te"))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionBadSubscriptionNameCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false, "#!*something^&*!."))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecuteWhenAddSubscriptionCalledNoEndpointReturnsBadRequestObjectResult()
         {
             //Arrange
@@ -315,13 +345,13 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return await _executeFunction.Run(_request, _log, subscriptionName).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName)
+        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription")
         {
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
                 Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
                 Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
-                Name = includeName ? "A-Test-Subscription" : null
+                Name = includeName ? subscriptionName : null
             });
         }
     }
