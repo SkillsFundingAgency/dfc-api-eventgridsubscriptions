@@ -80,7 +80,7 @@ namespace DFC.EventGridSubscriptions.Services
 
         private async Task DeleteEventGridEventSubscriptionAsync(string subscriptionName)
         {
-            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.TopicName!);
             string eventSubscriptionScope = topic.Id;
 
             logger.LogInformation($"Deleting subscription {subscriptionName} from topic {topic.Name}...");
@@ -92,7 +92,7 @@ namespace DFC.EventGridSubscriptions.Services
 
         private async Task CreateEventGridEventSubscriptionAsync(string eventSubscriptionName, string endpointUrl, SubscriptionFilter? filter)
         {
-            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.TopicName!);
             string eventSubscriptionScope = topic.Id;
 
             logger.LogInformation($"Creating an event subscription to topic {topic.Name}...");
@@ -134,13 +134,13 @@ namespace DFC.EventGridSubscriptions.Services
 
         public async Task<IEnumerable<EventSubscription>> GetAllSubscriptions()
         {
-            var allSubscriptions = await eventGridManagementClient.Subscription_GetAllAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            var allSubscriptions = await eventGridManagementClient.Subscription_GetAllAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.TopicName!);
             return allSubscriptions;
         }
 
         public async Task<EventSubscription> GetSubscription(string subscriptionName)
         {
-            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.Topic!);
+            Topic topic = await eventGridManagementClient.Topic_GetAsync(eventGridSubscriptionClientOptions!.CurrentValue!.ResourceGroup!, eventGridSubscriptionClientOptions!.CurrentValue!.TopicName!);
             string eventSubscriptionScope = topic.Id;
 
             var subscription = await eventGridManagementClient.Subscription_GetByIdAsync(eventSubscriptionScope, subscriptionName);
