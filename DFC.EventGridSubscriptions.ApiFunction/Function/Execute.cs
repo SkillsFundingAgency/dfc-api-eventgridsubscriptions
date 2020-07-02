@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -120,9 +121,21 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 return false;
             }
 
+            if (request.Name.Length <= 3 || request.Name.Length > 64 || Regex.Match(request.Name, "^[a-zA-Z 0-9\\-]*$").Captures.Count == 0)
+            {
+                message = $"Subscriber name must be between 3 and 64 characters long and only contain characters a-z, A-Z, 0-9, and '-'";
+                return false;
+            }
+
             if (request.Endpoint == null)
             {
                 message = $"{nameof(request.Endpoint)} not present in request";
+                return false;
+            }
+
+            if (!request.Endpoint.IsAbsoluteUri)
+            {
+                message = $"{nameof(request.Endpoint)} not in correct format";
                 return false;
             }
 
