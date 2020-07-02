@@ -32,13 +32,15 @@ $ServicePrincipalObject = Get-AzADServicePrincipal -DisplayName $ServicePrincipa
 
 if ($ServicePrincipalObject) {
     Write-Verbose "Setting Application Id for $($ServicePrincipalName)"
-    $ApplicationId = $ServicePrincipalObject.ApplicationId
+    $ObjectId = $ServicePrincipalObject.Id
+
+    Write-Verbose "$($ObjectId)"
 
     Write-Verbose "Removing any existing Azure KeyVault Policy for System Identity $($ServicePrincipalName)"
-    Remove-AzKeyVaultAccessPolicy -VaultName $KeyVaultName -ResourceGroupName $ResourceGroupName -ServicePrincipalName $ApplicationId
+    Remove-AzKeyVaultAccessPolicy -VaultName $KeyVaultName  -ObjectId $ObjectId
 
     Write-Verbose "Setting Azure KeyVault Policy for System Identity $($ServicePrincipalName) to list,get"    
-    Set-AzKeyVaultAccessPolicy -VaultName $KeyVaultName -ResourceGroupName $ResourceGroupName -ServicePrincipalName $ApplicationId -PermissionsToSecrets  get,list
+    Set-AzKeyVaultAccessPolicy -VaultName $KeyVaultName  -ObjectId $ObjectId -PermissionsToSecrets  get,list
 
 } else {
     Write-Verbose "$($ServicePrincipalName) not found on subscription"
