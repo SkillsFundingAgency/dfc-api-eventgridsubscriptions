@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DFC.EventGridSubscriptions.ApiFunction": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "development"
+      }
+    }
+  }
+}
