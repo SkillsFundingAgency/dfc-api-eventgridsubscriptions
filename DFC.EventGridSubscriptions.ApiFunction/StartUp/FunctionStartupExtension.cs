@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 
 [assembly: FunctionsStartup(typeof(FunctionStartupExtension))]
 
@@ -30,7 +31,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             }
 
             var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(GetCustomSettingsPath())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
@@ -49,6 +50,31 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             builder.Services.AddSingleton<IConfiguration>(config);
             builder.Services.AddTransient<ISubscriptionRegistrationService, SubscriptionRegistrationService>();
             builder.Services.AddEventGridManagementClient();
+        }
+
+        private static string GetCustomSettingsPath()
+        {
+            var home = Environment.GetEnvironmentVariable("HOME");
+            string? path;
+            if (home != null)
+            {
+                // We're on Azure
+                path = Path.Combine(home, "site", "wwwroot");
+            }
+            else
+            {
+                // Running locally
+                path = new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath;
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    path = Path.GetDirectoryName(path);
+                    DirectoryInfo parentDir = Directory.GetParent(path);
+                    path = parentDir.FullName;
+                }
+            }
+
+            return path ?? string.Empty;
         }
     }
 }
