@@ -378,6 +378,23 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsNullActionContextParameter()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
+            A.CallTo(() => _request.Method).Returns("DELETE");
+            //Execute async manually - happens automatically in request pipeline
+            var context = new ActionContext();
+            context.HttpContext = A.Fake<HttpContext>();
+
+            //Act
+            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await result.ExecuteResultAsync(null).ConfigureAwait(false));
+        }
+
+        [Fact]
         public async Task ExecuteWhenDeleteSubscriptionCalledNullSubscriptionNameReturnsBadRequestObjectResult()
         {
             //Arrange
