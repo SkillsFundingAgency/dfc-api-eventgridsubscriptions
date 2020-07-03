@@ -113,7 +113,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
         private static void ValidatePostParameters(HttpRequest req)
         {
-            if (req.Body == null || req.Body.Length == 0)
+            if (req.Body == null)
             {
                 throw new ArgumentException(nameof(req.Body));
             }
@@ -122,6 +122,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         private bool ValidateBodyParameters(SubscriptionRequest request, out string message)
         {
             message = string.Empty;
+
+            if (request == null)
+            {
+                message = $"Invalid Body in Request";
+                return false;
+            }
 
             if (string.IsNullOrEmpty(request.Name))
             {
