@@ -190,7 +190,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false, "te"))));
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "te"))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
@@ -205,7 +205,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false, "#!*something^&*!."))));
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "#!*something^&*!"))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
 
             //Act
@@ -253,7 +253,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 0 });
 
             //Act
             BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
@@ -267,7 +267,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, null, 2))));
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, null, 1))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledRelativeEndpointUriReturnsBadRequestResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, null, 1, "somewhere.com/somelocation", false))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
 
             //Act
@@ -349,11 +364,16 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Arrange
             A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
             A.CallTo(() => _request.Method).Returns("DELETE");
+            //Execute async manually - happens automatically in request pipeline
+            var context = new ActionContext();
+            context.HttpContext = A.Fake<HttpContext>();
 
             //Act
             ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+            await result.ExecuteResultAsync(context);
 
             // Assert
+            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, context.HttpContext.Response.StatusCode);
             Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, (int)result.StatusCode);
         }
 
@@ -376,7 +396,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return await _executeFunction.Run(_request, _log, subscriptionName).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1)
+        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
         {
             var advancedFilters = new List<StringInAdvancedFilter>();
 
@@ -387,7 +407,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
-                Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
+                Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
                 Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
                 Name = includeName ? subscriptionName : null
             });
