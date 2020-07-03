@@ -6,5 +6,6 @@ namespace DFC.EventGridSubscriptions.Data
     public class AdvancedFilterOptions
     {
         public int MaximumAdvancedFilterValues { get; set; }
+        public int MaximumAdvancedFilters { get; set; }
     }
 }

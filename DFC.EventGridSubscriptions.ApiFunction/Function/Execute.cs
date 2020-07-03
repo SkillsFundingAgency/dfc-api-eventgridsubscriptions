@@ -1,4 +1,5 @@
-﻿using DFC.EventGridSubscriptions.Data;
+﻿using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.AspNetCore.Http;
@@ -7,9 +8,12 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -72,6 +76,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 log.LogError(e.ToString());
                 return new BadRequestObjectResult(e);
             }
+            catch (RestException e)
+            {
+                log.LogError(e.ToString());
+                return new ServiceUnavailableObjectResult(e.ToString());
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -120,16 +129,34 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 return false;
             }
 
+            if (Regex.Match(request.Name, "^[a-zA-Z 0-9\\-]{3,64}$").Captures.Count == 0)
+            {
+                message = $"Subscriber name must be between 3 and 64 characters long and only contain characters a-z, A-Z, 0-9, and '-'";
+                return false;
+            }
+
             if (request.Endpoint == null)
             {
                 message = $"{nameof(request.Endpoint)} not present in request";
                 return false;
             }
 
-            //No more than 5 advanced filters are supported by Event Grid
-            if (request.Filter != null && request.Filter.PropertyContainsFilter != null && request.Filter.PropertyContainsFilter.Values.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+            if (!request.Endpoint.IsAbsoluteUri)
             {
-                message = $"{nameof(request.Filter.PropertyContainsFilter)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                message = $"{nameof(request.Endpoint)} not in correct format";
+                return false;
+            }
+
+            //Validate for maximum filter counts
+            if (request.Filter != null && request.Filter.PropertyContainsFilters != null && request.Filter.PropertyContainsFilters.Select(x => x.Values).Count() > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+            {
+                message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                return false;
+            }
+
+            if (request.Filter != null && request.Filter.PropertyContainsFilters != null && request.Filter.PropertyContainsFilters.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilters)
+            {
+                message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilters} advanced filters";
                 return false;
             }
 
