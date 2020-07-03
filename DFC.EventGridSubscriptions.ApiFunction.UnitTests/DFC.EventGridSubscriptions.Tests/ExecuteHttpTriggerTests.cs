@@ -1,4 +1,5 @@
-﻿using DFC.EventGridSubscriptions.Data;
+﻿using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using FakeItEasy;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -129,7 +131,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
 
             //Act
             CreatedResult result = (CreatedResult)await RunFunction(null);
@@ -145,7 +147,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.InternalServerError);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
 
             //Act
             InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction(null);
@@ -246,12 +248,27 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFilterValuesExceedMaximumReturnsBadRequestResult()
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, null, 2))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
 
             //Act
             BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
@@ -327,6 +344,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsServiceUnavailableResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
+            A.CallTo(() => _request.Method).Returns("DELETE");
+
+            //Act
+            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, (int)result.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecuteWhenDeleteSubscriptionCalledNullSubscriptionNameReturnsBadRequestObjectResult()
         {
             //Arrange
@@ -345,12 +376,19 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return await _executeFunction.Run(_request, _log, subscriptionName).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription")
+        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1)
         {
+            var advancedFilters = new List<StringInAdvancedFilter>();
+
+            for (int i = 0; i < numberOfFilters; i++)
+            {
+                advancedFilters.Add(new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }));
+            }
+
             return JsonConvert.SerializeObject(new SubscriptionRequest
             {
                 Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
-                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
+                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
                 Name = includeName ? subscriptionName : null
             });
         }

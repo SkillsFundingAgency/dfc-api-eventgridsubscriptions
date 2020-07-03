@@ -54,7 +54,7 @@ Supported API Endpoints:
         "BeginsWith":"atestbeginswith",
         "EndsWith":"atestendswith",
         "IncludeEventTypes":["blobcreated","contentcreated"],
-        "PropertyContainsFilter":{"key":"subject", "values":["guid1","guid2","emails"]}
+        "PropertyContainsFilters":[{"key":"subject", "values":["guid1","guid2","emails"]},{"key":"subject", "values":["guid1","guid2","emails"]}]
     }
 }
 ```

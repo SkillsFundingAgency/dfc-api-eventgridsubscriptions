@@ -44,7 +44,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
 
             //Act
-            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { PropertyContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c", "d", "e" }) } });
+            var result = await serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new Data.Models.SubscriptionFilter { PropertyContainsFilters = new List<StringInAdvancedFilter> { new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c", "d", "e" }) } } });
 
             //Assert
             Assert.Equal(HttpStatusCode.Created, result);
@@ -61,7 +61,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             //Act
             //Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { PropertyContainsFilter = new StringInAdvancedFilter("subject", new List<string> { "1", "2", "3", "4", "5" }) } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => serviceToTest.AddSubscription(new Data.Models.SubscriptionRequest { Endpoint = new Uri("http://somehost.com/awebhook"), Name = null, Filter = new Data.Models.SubscriptionFilter { PropertyContainsFilters = new List<StringInAdvancedFilter> { new StringInAdvancedFilter("subject", new List<string> { "1", "2", "3", "4", "5" }) } } }));
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
         }
