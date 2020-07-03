@@ -129,7 +129,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 return false;
             }
 
-            if (request.Name.Length <= 3 || request.Name.Length > 64 || Regex.Match(request.Name, "^[a-zA-Z 0-9\\-]*$").Captures.Count == 0)
+            if (Regex.Match(request.Name, "^[a-zA-Z 0-9\\-]{3,64}$").Captures.Count == 0)
             {
                 message = $"Subscriber name must be between 3 and 64 characters long and only contain characters a-z, A-Z, 0-9, and '-'";
                 return false;
