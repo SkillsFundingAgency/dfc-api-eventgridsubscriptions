@@ -398,11 +398,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
         private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
         {
-            var advancedFilters = new List<StringInAdvancedFilter>();
+            var advancedFilters = new List<StringContainsAdvancedFilter>();
 
             for (int i = 0; i < numberOfFilters; i++)
             {
-                advancedFilters.Add(new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }));
+                advancedFilters.Add(new StringContainsAdvancedFilter("subject", new List<string> { "a", "b", "c" }));
             }
 
             return JsonConvert.SerializeObject(new SubscriptionRequest
