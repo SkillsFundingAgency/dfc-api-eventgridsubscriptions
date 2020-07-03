@@ -248,12 +248,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFilterValuesExceedMaximumReturnsBadRequestResult()
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 0 });
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1, MaximumAdvancedFilterValues = 25 });
 
             //Act
             BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
@@ -263,7 +263,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFilterValuesExceedMaximumReturnsBadRequestResult()
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
