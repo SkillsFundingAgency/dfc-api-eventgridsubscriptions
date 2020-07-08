@@ -17,9 +17,6 @@
         "SharedAppServicePlanResourceGroup": {
             "value": "dfc-dev-app-sharedresources-rg"
         },
-        "sharedKeyVaultRg": {
-            "value": "dfc-dev-app-sharedrsources-rg"
-        },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"
         },
@@ -28,7 +25,18 @@
         },
         "EventGridTopicName": {
             "value": "Event-Grid-Topic-Name"
+        },
+        "ApimResourceGroup": {
+            "value": "dfc-test-template-rg"
+        },
+        "ApimServiceName": {
+            "value": "an-apim-instance"
+        },
+        "ApimProductInstanceName": {
+            "value": "test-api-product"
+        },
+        "ApiName": {
+            "value": "api-name"
         }
-
     }
 }
