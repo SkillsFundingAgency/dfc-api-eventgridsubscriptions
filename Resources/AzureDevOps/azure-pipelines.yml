@@ -71,7 +71,7 @@ stages:
     steps:
     - template: AzureDevOpsTemplates\Build\StepTemplates\dfc-dotnetcore-build-sonar.yml@dfc-devops
       parameters:
-        SolutionBaseName: $(SolutionBaseName)
+        SolutionBaseName: 'DFC.EventGridSubscriptions.ApiFunction'
         BuildPlatform: 'any cpu'
         BuildConfiguration: 'release'
         DotNetCoreVersion: 3.1.101
