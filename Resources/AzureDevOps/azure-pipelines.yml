@@ -123,8 +123,8 @@ stages:
         ScriptArguments: '-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose'
         azurePowerShellVersion: LatestVersion
 
-    job: 
-    steps: SetKeyvaultPermissions
+    job: SetKeyvaultPermissions
+    steps:
     - task: AzurePowerShell@5
       displayName: 'Azure PowerShell script: Keyvault permissions'
       inputs:
