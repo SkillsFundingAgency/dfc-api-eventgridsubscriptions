@@ -57,6 +57,12 @@ stages:
         targetPath: "$(System.DefaultWorkingDirectory)/DFC.EventGridSubscriptions.ApiFunction/OpenAPIDocs"
         artifactName: DFC.EventGridSubscriptions.ApiFunction.Resources.OpenAPIDocs
 
+    - task: PublishPipelineArtifact@1
+      displayName: Publish apim policies
+      inputs:
+        targetPath: "$(System.DefaultWorkingDirectory)/Resources/ApimPolicy"
+        artifactName: DFC.Api.Content.Resources.ApimPolicies
+
   #Build and test the application
   - job: BuildTestAndAnalyze
     displayName: "Build and test application"
