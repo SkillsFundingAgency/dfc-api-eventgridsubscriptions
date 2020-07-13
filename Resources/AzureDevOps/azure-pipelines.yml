@@ -1,3 +1,9 @@
+variables:
+    SolutionBaseName: 'DFC.EventGridSubscriptions.ApiFunction'
+    BuildPlatform: 'any cpu'
+    BuildConfiguration: 'release'
+    ArmTemplateRoot: '$(Build.SourcesDirectory)\Resources\ArmTemplates'
+
 resources:
   repositories:
   - repository: self
@@ -113,22 +119,22 @@ stages:
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
     
-    # job: CreateServicePrincipal
-    # steps:
-    # - task: AzurePowerShell@5
-    #   displayName: 'Azure PowerShell script: Creation of Service Principal'
-    #   inputs:
-    #     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
-    #     ScriptPath: '$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/Dfc.Shared.Resources.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1'
-    #     ScriptArguments: '-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose'
-    #     azurePowerShellVersion: LatestVersion
+    job: CreateServicePrincipal
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Azure PowerShell script: Creation of Service Principal'
+      inputs:
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+        ScriptPath: '$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/Dfc.Shared.Resources.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1'
+        ScriptArguments: '-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose'
+        azurePowerShellVersion: LatestVersion
 
-    # job: SetKeyvaultPermissions
-    # steps:
-    # - task: AzurePowerShell@5
-    #   displayName: 'Azure PowerShell script: Keyvault permissions'
-    #   inputs:
-    #     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
-    #     ScriptPath: '$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/Dfc.Shared.Resources.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1'
-    #     ScriptArguments: ' -KeyVaultName  dfc-dev-shared-kv -ResourceGroupName dfc-dev-shared-rg -ServicePrincipalName dfc-dev-api-eventgridsubscriptions-fa -Verbose'
-    #     azurePowerShellVersion: LatestVersion
+    job: SetKeyvaultPermissions
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Azure PowerShell script: Keyvault permissions'
+      inputs:
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+        ScriptPath: '$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/Dfc.Shared.Resources.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1'
+        ScriptArguments: ' -KeyVaultName  dfc-dev-shared-kv -ResourceGroupName dfc-dev-shared-rg -ServicePrincipalName dfc-dev-api-eventgridsubscriptions-fa -Verbose'
+        azurePowerShellVersion: LatestVersion
