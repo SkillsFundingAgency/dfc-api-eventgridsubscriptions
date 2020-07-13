@@ -84,6 +84,7 @@ stages:
   - group: dfc-shared-dev
   - group: dfc-app-shared-all
   - group: dfc-app-shared-dev
+  - template: VariableTemplates\DevEnvironmentVariables.yml
   - name: WebAppPrefix
     value: dfc-dev
   jobs:
