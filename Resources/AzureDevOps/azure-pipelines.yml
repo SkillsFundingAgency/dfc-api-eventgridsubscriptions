@@ -1,5 +1,5 @@
 variables:
-    SolutionBaseName: 'DFC.EventGridSubscriptions.ApiFunction'
+    SolutionBaseName: 'DFC.Api.EventGridSubscriptions'
     BuildPlatform: 'any cpu'
     BuildConfiguration: 'release'
     ArmTemplateRoot: '$(Build.SourcesDirectory)\Resources\ArmTemplates'
