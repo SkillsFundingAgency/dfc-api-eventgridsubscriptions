@@ -61,7 +61,7 @@ stages:
       displayName: Publish apim policies
       inputs:
         targetPath: "$(System.DefaultWorkingDirectory)/Resources/ApimPolicy"
-        artifactName: DFC.Api.Content.Resources.ApimPolicies
+        artifactName: DFC.EventGridSubscriptions.ApiFunction.Resources.ApimPolicies
 
   #Build and test the application
   - job: BuildTestAndAnalyze
