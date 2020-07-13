@@ -44,6 +44,11 @@ stages:
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)/Resources/PSScripts
         artifactName: Dfc.Shared.Resources.PSScripts
+    - task: PublishPipelineArtifact@1
+      displayName: Publish OpenAPI docs to Pipeline Artifact
+      inputs:
+        targetPath: "$(System.DefaultWorkingDirectory)/DFC.EventGridSubscriptions.ApiFunction/OpenAPIDocs"
+        artifactName: DFC.EventGridSubscriptions.ApiFunction.Resources.OpenAPIDocs
 
   #Build and test the application
   - job: BuildTestAndAnalyze
