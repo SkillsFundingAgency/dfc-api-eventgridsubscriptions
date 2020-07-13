@@ -58,6 +58,12 @@ stages:
         artifactName: DFC.Api.EventGridSubscriptions.Resources.OpenAPIDocs
 
     - task: PublishPipelineArtifact@1
+      displayName: Publish API import script to Pipeline Artifact
+      inputs:
+        targetPath: "$(System.DefaultWorkingDirectory)/Resources/Scripts"
+        artifactName: DFC.Api.EventGridSubscriptions.Resources.Scripts
+
+    - task: PublishPipelineArtifact@1
       displayName: Publish apim policies
       inputs:
         targetPath: "$(System.DefaultWorkingDirectory)/Resources/ApimPolicy"
