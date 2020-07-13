@@ -101,7 +101,7 @@ stages:
       ParentBusiness: '$(ParentBusiness)'
       ServiceOffering: '$(ServiceOffering)'
       ResourceGroup: 'dfc-dev-api-eventgridsubscriptions-rg'
-      PackageFile:  "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
+      PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
       ApimPoliciesPath:  "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies"
       ApimProductId: 'EventGridSubscriptions'
       ApimLoggerName: 'EventGridSubscriptions-logger'
@@ -129,7 +129,7 @@ stages:
       displayName: 'Azure PowerShell script: Creation of Service Principal'
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
-        ScriptPath: '$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1'
+        ScriptPath: '$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1'
         ScriptArguments: '-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose'
         azurePowerShellVersion: LatestVersion
 
