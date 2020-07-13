@@ -49,19 +49,19 @@ stages:
       displayName: Publish PSScripts Pipeline Artifact
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)/Resources/PSScripts
-        artifactName: Dfc.Shared.Resources.PSScripts
+        artifactName: DFC.Api.EventGridSubscriptions.PSScripts
 
     - task: PublishPipelineArtifact@1
       displayName: Publish OpenAPI docs to Pipeline Artifact
       inputs:
         targetPath: "$(System.DefaultWorkingDirectory)/DFC.EventGridSubscriptions.ApiFunction/OpenAPIDocs"
-        artifactName: DFC.EventGridSubscriptions.ApiFunction.Resources.OpenAPIDocs
+        artifactName: DFC.Api.EventGridSubscriptions.Resources.OpenAPIDocs
 
     - task: PublishPipelineArtifact@1
       displayName: Publish apim policies
       inputs:
         targetPath: "$(System.DefaultWorkingDirectory)/Resources/ApimPolicy"
-        artifactName: DFC.EventGridSubscriptions.ApiFunction.Resources.ApimPolicies
+        artifactName: DFC.Api.EventGridSubscriptions.Resources.ApimPolicies
 
   #Build and test the application
   - job: BuildTestAndAnalyze
