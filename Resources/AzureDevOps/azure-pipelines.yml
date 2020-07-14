@@ -129,3 +129,46 @@ stages:
         -
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
+
+- stage: DeployToSITEventGridSubscriptions
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: Deploy to SIT_EventGridSubscriptions
+  variables:
+  - group: dfc-shared-all
+  - group: dfc-api-eventgridsubscriptions-sit
+  - group: dfc-shared-sit
+  - group: dfc-app-shared-all
+  - group: dfc-app-shared-sit
+  - group: dfc-compositeui-all
+  - template: VariableTemplates\SitEnvironmentVariables.yml
+  - name: WebAppPrefix
+    value: dfc-sit
+  jobs:
+  - template: JobTemplates/deploy-environment.yml
+    parameters:
+      AzureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+      EnvironmentTag: '$(EnvironmentTag)'
+      ParentBusiness: '$(ParentBusiness)'
+      ServiceOffering: '$(ServiceOffering)'
+      ResourceGroup: 'dfc-sit-api-eventgridsubscriptions-rg'
+      PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
+      ApimPoliciesPath:  "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies"
+      ApimProductId: "$(ApimProductId)"
+      ApimLoggerName: "$(ApimLoggerName)"
+      APIProductInstanceName: "$(ApimProductInstanceName)"
+      ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
+      ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
+      SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
+      SharedResourceGroup: "$(SharedResourceGroup)"
+      ApimServiceName: "$(ApimServiceName)"
+      FunctionAppDomain: "$(FunctionAppDomain)"
+      FunctionAppName: 'dfc-sit-api-eventgridsubscriptions-fa'
+      EnvironmentName: SIT_EventGridSubscriptions
+      DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)
+      # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
+      # The top level -`s here defines an array of "something"
+      # The inner level -'s defines an array of mappings.
+      Apis: 
+        -
+          - name: Subscription
+            azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
