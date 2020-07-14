@@ -17,9 +17,6 @@
         "SharedAppServicePlanResourceGroup": {
             "value": "__appSharedResourceGroup__"
         },
-        "sharedKeyVaultRg": {
-            "value": "__sharedResourceGroup__"
-        },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
         },
@@ -28,6 +25,15 @@
         },
         "EventGridTopicName": {
             "value": "__eventGridTopicName__"
+        },
+        "ApimResourceGroup": {
+            "value": "__SharedResourceGroupName__"
+        },
+        "ApimServiceName": {
+            "value": "__ApimServiceName__"
+        },
+        "ApiName": {
+            "value": "__ApiName__"
         }
     }
 }

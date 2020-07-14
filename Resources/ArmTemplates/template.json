@@ -19,10 +19,6 @@
             "type": "string",
             "defaultValue": ""
         },
-        "SharedKeyVaultRg": {
-            "type": "string",
-            "defaultValue": ""
-        },
         "SharedKeyVaultName": {
             "type": "string",
             "defaultValue": ""
@@ -34,18 +30,54 @@
         "EventGridTopicName": {
             "type": "string",
             "defaultValue": ""
+        },
+        "ApimResourceGroup": {
+            "type": "string"
+        },
+        "ApimServiceName": {
+            "type": "string"
+        },
+        "ApiName": {
+            "type": "string"
         }
-
     },
     "variables": {
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
-        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",        
+        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
-        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]"
+        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
+        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]"
     },
     "resources": [
+        {
+            "name": "[variables('VersionSetName')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('ApimResourceGroup')]",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'APIM/apim-versionset.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "apimServiceName": {
+                        "value": "[parameters('ApimServiceName')]"
+                    },
+                    "apiName": {
+                        "value": "[parameters('ApiName')]"
+                    },
+                    "versioningMethod": {
+                        "value": "Header"
+                    },
+                    "versionProperty": {
+                        "value": "version"
+                    }
+                }
+            }
+        },
         {
             "apiVersion": "2017-05-10",
             "name": "[variables('AppServiceAppInsightsName')]",
@@ -97,7 +129,7 @@
                     },
                     "appServiceAppSettings": {
                         "value": [
-                           {
+                            {
                                 "name": "FUNCTIONS_EXTENSION_VERSION",
                                 "value": "~3"
                             },
@@ -120,8 +152,7 @@
                             {
                                 "name": "AzureWebJobsStorage",
                                 "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appSharedStorageAccountName'),';AccountKey=',listKeys(resourceId(parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
-                            }
-                            ,
+                            },
                             {
                                 "name": "Logging__ApplicationInsights__LogLevel__Default",
                                 "value": "Information"
@@ -153,7 +184,7 @@
                             {
                                 "name": "EventGridSubscriptionClientOptions__TopicName",
                                 "value": "[parameters('EventGridTopicName')]"
-                            }                          
+                            }
                         ]
                     }
                 }
@@ -164,4 +195,4 @@
         }
     ],
     "outputs": {}
-    }
+}
