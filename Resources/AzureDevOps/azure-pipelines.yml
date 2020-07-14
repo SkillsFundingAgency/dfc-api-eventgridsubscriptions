@@ -131,7 +131,7 @@ stages:
     
   - job: CreateServicePrincipal
     steps:
-    - task: AzurePowerShell@4
+    - task: AzurePowerShell@5
       displayName: 'Azure PowerShell script: Creation of Service Principal'
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
@@ -141,7 +141,7 @@ stages:
 
   - job: SetKeyvaultPermissions
     steps:
-    - task: AzurePowerShell@4
+    - task: AzurePowerShell@5
       displayName: 'Azure PowerShell script: Keyvault permissions'
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
