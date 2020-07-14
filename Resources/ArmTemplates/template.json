@@ -37,9 +37,6 @@
         "ApimServiceName": {
             "type": "string"
         },
-        "ApimProductInstanceName": {
-            "type": "string"
-        },
         "ApiName": {
             "type": "string"
         }
@@ -54,54 +51,6 @@
         "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]"
     },
     "resources": [
-        {
-            "name": "eventgridsubscriptions-apim-logger",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('ApimResourceGroup')]",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'APIM/apim-logger.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "apimServiceName": {
-                        "value": "[parameters('ApimServiceName')]"
-                    },
-                    "productDisplayName": {
-                        "value": "[parameters('ApimProductInstanceName')]"
-                    }
-                }
-            }
-        },
-        {
-            "name": "eventgridsubscriptions-apim-product",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('ApimResourceGroup')]",
-            "apiVersion": "2017-05-10",
-            "dependsOn": [
-                "eventgridsubscriptions-apim-logger"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'APIM/apim-product.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "allowAnonymousAccess": {
-                        "value": false
-                    },
-                    "apimServiceName": {
-                        "value": "[parameters('ApimServiceName')]"
-                    },
-                    "productDisplayName": {
-                        "value": "[parameters('ApimProductInstanceName')]"
-                    }
-                }
-            }
-        },
         {
             "name": "[variables('VersionSetName')]",
             "type": "Microsoft.Resources/deployments",

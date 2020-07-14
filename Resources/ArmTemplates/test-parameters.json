@@ -32,9 +32,6 @@
         "ApimServiceName": {
             "value": "an-apim-instance"
         },
-        "ApimProductInstanceName": {
-            "value": "test-api-product"
-        },
         "ApiName": {
             "value": "api-name"
         }

@@ -96,6 +96,7 @@ stages:
   - group: dfc-shared-dev
   - group: dfc-app-shared-all
   - group: dfc-app-shared-dev
+  - group: dfc-compositeui-all
   - template: VariableTemplates\DevEnvironmentVariables.yml
   - name: WebAppPrefix
     value: dfc-dev
@@ -109,15 +110,15 @@ stages:
       ResourceGroup: 'dfc-dev-api-eventgridsubscriptions-rg'
       PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
       ApimPoliciesPath:  "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies"
-      ApimProductId: 'EventGridSubscriptions'
-      ApimLoggerName: 'EventGridSubscriptions-logger'
-      APIProductInstanceName: 'EventGridSubscriptions'
+      ApimProductId: "$(ApimProductId)"
+      ApimLoggerName: "$(ApimLoggerName)"
+      APIProductInstanceName: "$(ApimProductInstanceName)"
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
       ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
       SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
-      SharedResourceGroup: 'dfc-dev-shared-rg'
-      ApimServiceName: 'dfc-dev-shared-apim'
-      FunctionAppDomain: '$(FunctionAppDomain)'
+      SharedResourceGroup: "$(SharedResourceGroup)"
+      ApimServiceName: "$(ApimServiceName)"
+      FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-dev-api-eventgridsubscriptions-fa'
       EnvironmentName: DEV_EventGridSubscriptions
       DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)

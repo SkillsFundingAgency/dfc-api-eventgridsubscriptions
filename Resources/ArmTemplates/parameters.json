@@ -32,9 +32,6 @@
         "ApimServiceName": {
             "value": "__ApimServiceName__"
         },
-        "ApimProductInstanceName": {
-            "value": "__ApimProductInstanceName__"
-        },
         "ApiName": {
             "value": "__ApiName__"
         }
