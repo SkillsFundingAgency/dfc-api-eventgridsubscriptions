@@ -47,6 +47,22 @@ steps:
     Contents: parameters.json
   condition: always()
 
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script: Creation of Service Principal'
+  inputs:
+    azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+    ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1"
+    ScriptArguments: "-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose"
+    azurePowerShellVersion: LatestVersion
+
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script: Keyvault permissions'
+  inputs:
+    azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+    ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
+    ScriptArguments: "-KeyVaultName  dfc-dev-shared-kv -ResourceGroupName dfc-dev-shared-rg -ServicePrincipalName dfc-dev-api-eventgridsubscriptions-fa -Verbose"
+    azurePowerShellVersion: LatestVersion
+
 - task: AzurePowerShell@4
   displayName: 'Azure PowerShell: Set APIM Product Level Policy'
   inputs:
