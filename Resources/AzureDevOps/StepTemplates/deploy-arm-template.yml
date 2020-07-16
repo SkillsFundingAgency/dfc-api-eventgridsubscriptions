@@ -58,5 +58,5 @@ steps:
   inputs:
     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
-    ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName dfc-dev-shared-rg -ServicePrincipalName dfc-dev-api-eventgridsubscriptions-fa -Verbose"
+    ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName $(sharedResourceGroup) -ServicePrincipalName '$(ServicePrincipalName)-fa' -Verbose"
     azurePowerShellVersion: LatestVersion
