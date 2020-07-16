@@ -50,7 +50,7 @@ steps:
   inputs:
     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1"
-    ScriptArguments: "-ResourcePrefix dfc-dev-api-eventgridsubscriptions -RepoName dfc-api-eventgridsubscriptions -KeyVaultName dfc-dev-shared-kv -TenantId $(Authentication_Tenant)  -Verbose"
+    ScriptArguments: "-ServicePrincipalName $(ServicePrincipalName) -RepoName dfc-api-eventgridsubscriptions -KeyVaultName $(sharedKeyVaultName) -TenantId $(Authentication_Tenant) -EventGridResourceGroup $(EventGridResourceGroup) -EventGridTopicName $(EventGridTopicName) -Verbose"
     azurePowerShellVersion: LatestVersion
 
 - task: AzurePowerShell@5
@@ -58,5 +58,5 @@ steps:
   inputs:
     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
-    ScriptArguments: "-KeyVaultName  dfc-dev-shared-kv -ResourceGroupName dfc-dev-shared-rg -ServicePrincipalName dfc-dev-api-eventgridsubscriptions-fa -Verbose"
+    ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName $(sharedResourceGroup) -ServicePrincipalName '$(ServicePrincipalName)-fa' -Verbose"
     azurePowerShellVersion: LatestVersion
