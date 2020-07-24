@@ -12,5 +12,7 @@ namespace DFC.EventGridSubscriptions.Data.Models
         public string? EndsWith { get; set; }
         public List<string>? IncludeEventTypes { get; set; }
         public List<StringContainsAdvancedFilter>? PropertyContainsFilters { get; set; }
+
+        public List<ApiAdvancedFilter>? AdvancedFilters { get; set; }
     }
 }
