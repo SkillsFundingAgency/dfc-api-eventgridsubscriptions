@@ -1,5 +1,6 @@
-﻿using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
+using DFC.Compui.Subscriptions.Pkg.NetStandard.Converters;
+using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ namespace DFC.EventGridSubscriptions.Services
             this.logger = logger;
         }
 
-        public async Task<HttpStatusCode> AddSubscription(SubscriptionRequest request)
+        public async Task<HttpStatusCode> AddSubscription(SubscriptionSettings request)
         {
             try
             {
@@ -120,16 +121,30 @@ namespace DFC.EventGridSubscriptions.Services
 
         private IList<AdvancedFilter> BuildAdvancedFilters(SubscriptionFilter filter)
         {
-            if (filter.PropertyContainsFilters == null)
+            if (filter.PropertyContainsFilters == null && filter.AdvancedFilters == null)
             {
                 return new List<AdvancedFilter>();
             }
 
             var filterList = new List<AdvancedFilter>();
 
-            foreach(var propertyFilter in filter.PropertyContainsFilters)
+            if (filter.PropertyContainsFilters != null)
             {
-                filterList.Add(propertyFilter);
+                foreach (var propertyFilter in filter.PropertyContainsFilters)
+                {
+                    if (propertyFilter != null)
+                    {
+                        filterList.Add(new StringContainsAdvancedFilter(propertyFilter.Key, propertyFilter.Values));
+                    }
+                }
+            }
+
+            if (filter.AdvancedFilters != null)
+            {
+                foreach (var advancedFilter in filter.AdvancedFilters)
+                {
+                    filterList.Add(advancedFilter.Convert());
+                }
             }
 
             return filterList;

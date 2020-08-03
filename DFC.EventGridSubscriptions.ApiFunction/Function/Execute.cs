@@ -1,6 +1,6 @@
-﻿using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
+using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
 using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -90,14 +90,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
         }
 
-        private static async Task<SubscriptionRequest> GetBodyParametersAsync(Stream body)
+        private static async Task<SubscriptionSettings> GetBodyParametersAsync(Stream body)
         {
             using (var stream = new StreamReader(body))
             {
                 var content = await stream.ReadToEndAsync().ConfigureAwait(false);
 
                 //Extract Request Body and Parse To Class
-                SubscriptionRequest subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(content);
+                SubscriptionSettings subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionSettings>(content);
 
                 return subscriptionRequest;
             }
@@ -119,7 +119,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
         }
 
-        private bool ValidateBodyParameters(SubscriptionRequest request, out string message)
+        private bool ValidateBodyParameters(SubscriptionSettings request, out string message)
         {
             message = string.Empty;
 
@@ -154,16 +154,27 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
 
             //Validate for maximum filter counts
-            if (request.Filter != null && request.Filter.PropertyContainsFilters != null && request.Filter.PropertyContainsFilters.Select(x => x.Values).Count() > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+            if (request.Filter != null)
             {
-                message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
-                return false;
-            }
+                int? filterValueCount = 0;
+                filterValueCount += request.Filter!.PropertyContainsFilters != null ? request.Filter.PropertyContainsFilters.Select(x => x.Values).Count() : 0;
+                filterValueCount += request.Filter.AdvancedFilters != null ? request.Filter.AdvancedFilters.Select(z => z.Values).Count() : 0;
 
-            if (request.Filter != null && request.Filter.PropertyContainsFilters != null && request.Filter.PropertyContainsFilters.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilters)
-            {
-                message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilters} advanced filters";
-                return false;
+                if (filterValueCount > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+                {
+                    message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                    return false;
+                }
+
+                int? filterCount = 0;
+                filterCount += request.Filter!.PropertyContainsFilters != null ? request.Filter.PropertyContainsFilters.Count : 0;
+                filterCount += request.Filter.AdvancedFilters != null ? request.Filter.AdvancedFilters.Count : 0;
+
+                if (filterCount > advancedFilterOptions.CurrentValue.MaximumAdvancedFilters)
+                {
+                    message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilters} advanced filters";
+                    return false;
+                }
             }
 
             return true;

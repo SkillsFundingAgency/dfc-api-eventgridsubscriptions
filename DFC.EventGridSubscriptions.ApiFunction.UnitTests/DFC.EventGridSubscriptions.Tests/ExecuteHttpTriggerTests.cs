@@ -1,6 +1,6 @@
-﻿using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
+using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
 using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
 using DFC.EventGridSubscriptions.Services.Interface;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
@@ -128,7 +128,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         public async Task ExecuteWhenAddSubscriptionCalledReturnsCreatedResult()
         {
             //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
@@ -144,7 +144,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         public async Task ExecuteWhenAddSubscriptionCalledReturnsInternalServerErrorResult()
         {
             //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.InternalServerError);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.InternalServerError);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
@@ -233,7 +233,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         [Fact]
         public async Task ExecuteWhenAddSubscriptionCalledNoAdvancedFilterReturnsCreatedObjectResult()
         {
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
 
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
@@ -267,7 +267,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 1))));
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
             A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
 
             //Act
@@ -415,14 +415,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
         private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
         {
-            var advancedFilters = new List<StringContainsAdvancedFilter>();
+            var advancedFilters = new List<SubscriptionPropertyContainsFilter>();
 
             for (int i = 0; i < numberOfFilters; i++)
             {
-                advancedFilters.Add(new StringContainsAdvancedFilter("subject", new List<string> { "a", "b", "c" }));
+                advancedFilters.Add(new SubscriptionPropertyContainsFilter { Key = "subject", Values = new List<string> { "a", "b", "c" }.ToArray() });
             }
 
-            return JsonConvert.SerializeObject(new SubscriptionRequest
+            return JsonConvert.SerializeObject(new SubscriptionSettings
             {
                 Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
                 Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
