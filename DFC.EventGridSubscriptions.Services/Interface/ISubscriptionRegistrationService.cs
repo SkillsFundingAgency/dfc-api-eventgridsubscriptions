@@ -1,4 +1,4 @@
-﻿using DFC.EventGridSubscriptions.Data.Models;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
 using Microsoft.Azure.Management.EventGrid.Models;
 using System.Collections.Generic;
 using System.Net;
@@ -8,7 +8,7 @@ namespace DFC.EventGridSubscriptions.Services.Interface
 {
     public interface ISubscriptionRegistrationService
     {
-        Task<HttpStatusCode> AddSubscription(SubscriptionRequest request);
+        Task<HttpStatusCode> AddSubscription(SubscriptionSettings request);
         Task<HttpStatusCode> DeleteSubscription(string subscriptionName);
         Task<IEnumerable<EventSubscription>> GetAllSubscriptions();
         Task<EventSubscription> GetSubscription(string subscriptionName);
