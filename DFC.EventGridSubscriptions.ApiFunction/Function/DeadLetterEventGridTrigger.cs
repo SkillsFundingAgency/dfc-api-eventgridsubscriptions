@@ -27,8 +27,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             log.LogInformation(eventGridEvent.ToString(Formatting.Indented));
             var egEvent = eventGridEvent.ToObject<EventGridEvent>();
 
+            log.LogInformation($"Event is:{egEvent}");
             if (egEvent != null && egEvent.Data != null)
             {
+                log.LogInformation("Event and Data Not Null...");
                 JObject? dataObject = egEvent.Data as JObject;
 
                 if (string.Equals(egEvent.EventType, StorageBlobCreatedEvent, StringComparison.OrdinalIgnoreCase))
