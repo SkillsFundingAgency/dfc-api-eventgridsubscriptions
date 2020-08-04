@@ -9,6 +9,8 @@ namespace DFC.EventGridSubscriptions.Data
         public string? TopicName { get; set; }
         public string? SubscriptionId { get; set; }
         public string? DeadLetterBlobContainerName { get; set; }
-        public string DeadLetterBlobResourceId { get; set; }
+        public string? DeadLetterBlobResourceId { get; set; }
+        public int? RetryPolicyEventTimeToLiveInMinutes { get; set; }
+        public int? RetryPolicyMaxDeliveryAttempts { get; set; }
     }
 }

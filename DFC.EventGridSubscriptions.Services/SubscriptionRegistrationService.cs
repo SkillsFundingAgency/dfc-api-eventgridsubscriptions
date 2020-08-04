@@ -117,6 +117,11 @@ namespace DFC.EventGridSubscriptions.Services
                 {
                     BlobContainerName = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobContainerName,
                     ResourceId = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobResourceId,
+                },
+                RetryPolicy = new RetryPolicy
+                {
+                    EventTimeToLiveInMinutes = eventGridSubscriptionClientOptions.CurrentValue.RetryPolicyEventTimeToLiveInMinutes,
+                    MaxDeliveryAttempts = eventGridSubscriptionClientOptions.CurrentValue.RetryPolicyMaxDeliveryAttempts
                 }
             };
 
