@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace DFC.EventGridSubscriptions.ApiFunction.Function
+namespace DFC.EventGridSubscriptions.ApiFunction
 {
     public static class DeadLetterEventGridTrigger
     {
