@@ -112,7 +112,12 @@ namespace DFC.EventGridSubscriptions.Services
                     SubjectEndsWith = filter.EndsWith ?? "",
                     IncludedEventTypes = filter.IncludeEventTypes ?? null,
                     AdvancedFilters = BuildAdvancedFilters(filter),
-                } : new EventSubscriptionFilter()
+                } : new EventSubscriptionFilter(),
+                DeadLetterDestination = new StorageBlobDeadLetterDestination
+                {
+                    BlobContainerName = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobContainerName,
+                    ResourceId = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobResourceId,
+                }
             };
 
             EventSubscription createdEventSubscription = await eventGridManagementClient.Subscription_CreateOrUpdateAsync(eventSubscriptionScope, eventSubscriptionName, eventSubscription);
