@@ -184,6 +184,22 @@
                             {
                                 "name": "EventGridSubscriptionClientOptions__TopicName",
                                 "value": "[parameters('EventGridTopicName')]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__RetryPolicyEventTimeToLiveInMinutes",
+                                "value": "1"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__RetryPolicyMaxDeliveryAttempts",
+                                "value": "30"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterBlobContainerName",
+                                "value": "event-grid-dead-letter-events"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
+                                "value": "/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr"
                             }
                         ]
                     }
