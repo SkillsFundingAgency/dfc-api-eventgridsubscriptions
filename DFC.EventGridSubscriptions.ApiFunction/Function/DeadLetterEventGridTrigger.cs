@@ -4,9 +4,11 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.ApiFunction
@@ -14,7 +16,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     public static class DeadLetterEventGridTrigger
     {
         [FunctionName("ProcessDeadLetter")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
             if (req == null)
             {
@@ -44,7 +46,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         ValidationResponse = eventData.ValidationCode,
                     };
 
-                    return new OkObjectResult(response);
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json"),
+                    };
                 }
                 else if (eventGridEvent.Data is StorageBlobCreatedEventData)
                 {
@@ -53,7 +58,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 }
             }
 
-            return new OkObjectResult(response);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json"),
+            };
         }
 
         //if (eventGridEvent == null)
