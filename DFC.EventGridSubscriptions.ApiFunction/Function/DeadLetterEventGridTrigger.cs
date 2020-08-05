@@ -58,7 +58,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                     var eventData = (StorageBlobCreatedEventData)eventGridEvent.Data;
 
 #pragma warning disable CA1304 // Specify CultureInfo
-                    if (eventData.Url.ToLower() == "event-grid-dead-letter-events")
+                    if (eventData.Url.ToLower().Contains("event-grid-dead-letter-events", StringComparison.InvariantCultureIgnoreCase))
 #pragma warning restore CA1304 // Specify CultureInfo
                     {
                         log.LogInformation("Processing Dead Lettered Event");
