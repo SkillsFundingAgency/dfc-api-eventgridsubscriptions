@@ -3,17 +3,26 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.ApiFunction
 {
     public static class DeadLetterEventGridTrigger
     {
         [FunctionName("ProcessDeadLetter")]
-        public static void Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequest req, ILogger log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
-            var body = req.ReadAsStringAsync();
+            if (req == null)
+            {
+                throw new ArgumentNullException(nameof(req));
+            }
+
+            var body = await req.Content.ReadAsStringAsync().ConfigureAwait(false);
             log.LogInformation($"C# ProcessDeadLetter Trigger Fired. Body:{body}");
+
+            return req!.CreateResponse(HttpStatusCode.OK, string.Empty);
         }
 
         //if (eventGridEvent == null)
