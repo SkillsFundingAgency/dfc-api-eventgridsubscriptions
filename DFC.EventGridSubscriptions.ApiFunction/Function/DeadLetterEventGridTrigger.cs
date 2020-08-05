@@ -48,7 +48,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent(JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json"),
+                        Content = new StringContent(JsonConvert.SerializeObject(responseData), Encoding.UTF8, "application/json"),
                     };
                 }
                 else if (eventGridEvent.Data is StorageBlobCreatedEventData)
