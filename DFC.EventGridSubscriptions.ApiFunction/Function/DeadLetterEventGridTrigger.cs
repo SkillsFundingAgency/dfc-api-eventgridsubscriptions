@@ -33,6 +33,8 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 log.LogInformation("Event and Data Not Null...");
                 JObject? dataObject = egEvent.Data as JObject;
 
+                log.Log($"Event Type: {egEvent.EventType}");
+
                 if (string.Equals(egEvent.EventType, StorageBlobCreatedEvent, StringComparison.OrdinalIgnoreCase))
                 {
                     log.LogInformation("Received blob created event..");
