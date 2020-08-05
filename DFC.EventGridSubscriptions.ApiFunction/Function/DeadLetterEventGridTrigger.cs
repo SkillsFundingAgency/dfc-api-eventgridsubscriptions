@@ -53,8 +53,19 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 }
                 else if (eventGridEvent.Data is StorageBlobCreatedEventData)
                 {
+                    log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event started");
+
                     var eventData = (StorageBlobCreatedEventData)eventGridEvent.Data;
-                    log.LogInformation($"Got BlobCreated event data, blob URI {eventData.Url}");
+
+#pragma warning disable CA1304 // Specify CultureInfo
+                    if (eventData.Url.ToLower() == "event-grid-dead-letter-events")
+#pragma warning restore CA1304 // Specify CultureInfo
+                    {
+                        log.LogInformation("Processing Dead Lettered Event");
+                        log.LogInformation($"Dead Lettered Event Data: {JsonConvert.SerializeObject(eventData)}");
+                    }
+
+                    log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event completed");
                 }
             }
 
