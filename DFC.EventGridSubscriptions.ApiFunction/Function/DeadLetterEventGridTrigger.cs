@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     public static class DeadLetterEventGridTrigger
     {
         [FunctionName("ProcessDeadLetter")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
             if (req == null)
             {
@@ -22,7 +23,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             var body = await req.Content.ReadAsStringAsync().ConfigureAwait(false);
             log.LogInformation($"C# ProcessDeadLetter Trigger Fired. Body:{body}");
 
-            return req!.CreateResponse(HttpStatusCode.OK, string.Empty);
+            return new OkResult();
         }
 
         //if (eventGridEvent == null)
