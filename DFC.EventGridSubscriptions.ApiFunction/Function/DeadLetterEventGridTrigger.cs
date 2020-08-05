@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.EventGrid;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -13,7 +14,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     public static class DeadLetterEventGridTrigger
     {
         [FunctionName("ProcessDeadLetter")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
             if (req == null)
             {
@@ -43,7 +44,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         ValidationResponse = eventData.ValidationCode,
                     };
 
-                    return req.CreateResponse(HttpStatusCode.OK, responseData);
+                    return new OkObjectResult(response);
                 }
                 else if (eventGridEvent.Data is StorageBlobCreatedEventData)
                 {
@@ -52,7 +53,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 }
             }
 
-            return req.CreateResponse(HttpStatusCode.OK, response);
+            return new OkObjectResult(response);
         }
 
         //if (eventGridEvent == null)
