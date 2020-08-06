@@ -77,7 +77,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                     {
                         log.LogInformation("Processing Dead Lettered Event");
 
-                        var blobString = $"{options.CurrentValue.DeadLetterBlobContainerName}/blobs/{options.CurrentValue.TopicName}/";
+                        var blobString = $"{options.CurrentValue.DeadLetterBlobContainerName}/{options.CurrentValue.TopicName}/";
 
                         log.LogInformation($"Looking for Blob string:{blobString} in {eventData.Url}");
 
