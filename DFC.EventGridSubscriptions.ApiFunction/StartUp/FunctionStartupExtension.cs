@@ -1,4 +1,6 @@
-﻿using DFC.EventGridSubscriptions.ApiFunction.StartUp;
+﻿using DFC.Compui.Cosmos;
+using DFC.Compui.Cosmos.Contracts;
+using DFC.EventGridSubscriptions.ApiFunction.StartUp;
 using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using DFC.EventGridSubscriptions.Services.Extensions;
@@ -48,8 +50,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             config = configBuilder.AddKeyVaultConfigurationProvider(config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>(), builder.Services.BuildServiceProvider()).Build();
 
             builder.Services.AddSingleton<IConfiguration>(config);
-            builder.Services.AddTransient<ISubscriptionRegistrationService, SubscriptionRegistrationService>();
+            builder.Services.AddTransient<ISubscriptionService, SubscriptionService>();
             builder.Services.AddEventGridManagementClient();
+
+            var cosmosDbConnectionEventGridSubscriptions = config.GetSection("Configuration:CosmosDbConnections:EventGridSubscriptions").Get<CosmosDbConnection>();
+            builder.Services.AddDocumentServices<SubscriptionModel>(cosmosDbConnectionEventGridSubscriptions, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT" ? true : false);
         }
 
         private static string GetCustomSettingsPath()

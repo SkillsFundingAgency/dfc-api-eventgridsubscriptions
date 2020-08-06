@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -24,7 +25,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     /// </summary>
     public class Execute
     {
-        private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly ISubscriptionService subscriptionRegistrationService;
         private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         /// </summary>
         /// <param name="subscriptionRegistrationService">A Subscription Registration Service.</param>
         /// <param name="advancedFilterOptions">The Advanced Filter Options.</param>
-        public Execute(ISubscriptionRegistrationService subscriptionRegistrationService, IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions)
+        public Execute(ISubscriptionService subscriptionRegistrationService, IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions)
         {
             this.subscriptionRegistrationService = subscriptionRegistrationService;
             this.advancedFilterOptions = advancedFilterOptions;
@@ -51,6 +52,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             try
             {
+                if (Activity.Current == null)
+                {
+                    Activity.Current = new Activity($"{nameof(DeadLetterEventGridTrigger)}").Start();
+                }
+
                 log.LogInformation("Subscription function execution started");
 
                 if (req == null || string.IsNullOrEmpty(req.Method))

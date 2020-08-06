@@ -1,4 +1,5 @@
 ﻿using DFC.EventGridSubscriptions.Data;
+using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -18,15 +21,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     public class DeadLetterEventGridTrigger
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> options;
+        private readonly ISubscriptionService subscriptionService;
 
-        public DeadLetterEventGridTrigger(IOptionsMonitor<EventGridSubscriptionClientOptions> options)
+        public DeadLetterEventGridTrigger(IOptionsMonitor<EventGridSubscriptionClientOptions> options, ISubscriptionService subscriptionService)
         {
             this.options = options;
+            this.subscriptionService = subscriptionService;
         }
 
         [FunctionName("ProcessDeadLetter")]
         public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
+            if (Activity.Current == null)
+            {
+                Activity.Current = new Activity($"{nameof(DeadLetterEventGridTrigger)}").Start();
+            }
+
             if (req == null)
             {
                 throw new ArgumentNullException(nameof(req));
@@ -49,7 +59,6 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                     var eventData = (SubscriptionValidationEventData)eventGridEvent.Data;
                     log.LogInformation($"Got SubscriptionValidation event data, validation code: {eventData.ValidationCode}, topic: {eventGridEvent.Topic}");
 
-                    // Do any additional validation (as required) and then return back the below response
                     var responseData = new SubscriptionValidationResponse()
                     {
                         ValidationResponse = eventData.ValidationCode,
@@ -71,31 +80,24 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                     var eventData = (StorageBlobCreatedEventData)eventGridEvent.Data;
 
-#pragma warning disable CA1304 // Specify CultureInfo
-                    if (eventData.Url.ToLower().Contains(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.CurrentCultureIgnoreCase))
-#pragma warning restore CA1304 // Specify CultureInfo
+                    if (eventData == null)
+                    {
+                        throw new InvalidDataException($"{nameof(StorageBlobCreatedEventData)} in EventGridEvent {eventGridEvent.Id} is null");
+                    }
+
+                    if (eventData.Url != null && eventData.Url!.ToUpperInvariant().Contains(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.CurrentCultureIgnoreCase))
                     {
                         log.LogInformation("Processing Dead Lettered Event");
 
                         var blobString = $"{options.CurrentValue.DeadLetterBlobContainerName}/{options.CurrentValue.TopicName}/";
 
-                        log.LogInformation($"Looking for Blob string:{blobString} in {eventData.Url}");
-
-                        int startIndex = eventData.Url.IndexOf(blobString, StringComparison.OrdinalIgnoreCase);
-                        log.LogInformation($"Start Index: {startIndex}");
-
-                        startIndex += blobString.Length;
+                        int startIndex = eventData.Url.IndexOf(blobString, StringComparison.OrdinalIgnoreCase) + blobString.Length;
                         int endIndex = eventData.Url.IndexOf("/", startIndex, StringComparison.OrdinalIgnoreCase);
-
-                        log.LogInformation($"End Index: {endIndex}");
-
                         var subscriberName = eventData.Url[startIndex..endIndex];
-
-                        log.LogInformation($"Subscriber name:{subscriberName}");
 
                         log.LogError($"Dead Lettered Event, Blob URL: {eventData.Url}, SubscriberName {subscriberName}");
 
-                        log.LogInformation($"Dead Lettered Event Data: {JsonConvert.SerializeObject(eventData)}");
+                        var result = await subscriptionService.StaleSubscription(subscriberName).ConfigureAwait(false);
                     }
 
                     log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event completed");

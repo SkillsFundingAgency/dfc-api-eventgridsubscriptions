@@ -9,7 +9,7 @@
             The Execute Function.
             </summary>
         </member>
-        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.#ctor(DFC.EventGridSubscriptions.Services.Interface.ISubscriptionRegistrationService,Microsoft.Extensions.Options.IOptionsMonitor{DFC.EventGridSubscriptions.Data.AdvancedFilterOptions})">
+        <member name="M:DFC.EventGridSubscriptions.ApiFunction.Execute.#ctor(DFC.EventGridSubscriptions.Services.Interface.ISubscriptionService,Microsoft.Extensions.Options.IOptionsMonitor{DFC.EventGridSubscriptions.Data.AdvancedFilterOptions})">
             <summary>
             Initializes a new instance of the <see cref="T:DFC.EventGridSubscriptions.ApiFunction.Execute"/> class.
             </summary>

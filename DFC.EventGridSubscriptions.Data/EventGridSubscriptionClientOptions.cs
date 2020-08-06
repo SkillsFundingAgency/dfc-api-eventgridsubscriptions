@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DFC.EventGridSubscriptions.Data
 {
@@ -12,5 +13,7 @@ namespace DFC.EventGridSubscriptions.Data
         public string? DeadLetterBlobResourceId { get; set; }
         public int? RetryPolicyEventTimeToLiveInMinutes { get; set; }
         public int? RetryPolicyMaxDeliveryAttempts { get; set; }
+        public TimeSpan? StaleSubsriptionInterval { get; set; }
+        public int StaleSubsriptionThreshold { get; set; }
     }
 }
