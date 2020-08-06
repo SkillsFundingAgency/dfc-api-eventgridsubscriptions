@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DFC.EventGridSubscriptions.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Net;
@@ -13,10 +15,17 @@ using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.ApiFunction
 {
-    public static class DeadLetterEventGridTrigger
+    public class DeadLetterEventGridTrigger
     {
+        private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> options;
+
+        public DeadLetterEventGridTrigger(IOptionsMonitor<EventGridSubscriptionClientOptions> options)
+        {
+            this.options = options;
+        }
+
         [FunctionName("ProcessDeadLetter")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
+        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
             if (req == null)
             {
@@ -53,15 +62,33 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 }
                 else if (eventGridEvent.Data is StorageBlobCreatedEventData)
                 {
+                    if (options.CurrentValue.DeadLetterBlobContainerName == null)
+                    {
+                        throw new ArgumentException(nameof(options.CurrentValue.DeadLetterBlobContainerName));
+                    }
+
                     log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event started");
 
                     var eventData = (StorageBlobCreatedEventData)eventGridEvent.Data;
 
 #pragma warning disable CA1304 // Specify CultureInfo
-                    if (eventData.Url.ToLower().Contains("event-grid-dead-letter-events", StringComparison.InvariantCultureIgnoreCase))
+                    if (eventData.Url.ToLower().Contains(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.CurrentCultureIgnoreCase))
 #pragma warning restore CA1304 // Specify CultureInfo
                     {
                         log.LogInformation("Processing Dead Lettered Event");
+
+                        int startIndex = eventData.Url.IndexOf(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.CurrentCultureIgnoreCase) + options.CurrentValue.DeadLetterBlobContainerName.Length;
+                        int endIndex = eventData.Url.IndexOf("/", startIndex + options.CurrentValue.DeadLetterBlobContainerName.Length, StringComparison.CurrentCultureIgnoreCase);
+
+                        log.LogInformation($"Start Index: {startIndex}");
+                        log.LogInformation($"End Index: {endIndex}");
+
+                        var subscriberName = eventData.Url.Substring(startIndex, endIndex);
+
+                        log.LogInformation($"Subscriber name:{subscriberName}");
+
+                        log.LogError($"Dead Lettered Event, Blob URL: {eventData.Url}, SubscriberName {subscriberName}");
+
                         log.LogInformation($"Dead Lettered Event Data: {JsonConvert.SerializeObject(eventData)}");
                     }
 
