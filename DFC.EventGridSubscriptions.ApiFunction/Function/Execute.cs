@@ -54,7 +54,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             {
                 if (Activity.Current == null)
                 {
-                    Activity.Current = new Activity($"{nameof(DeadLetterEventGridTrigger)}").Start();
+                    Activity.Current = new Activity($"{nameof(Execute)}").Start();
                 }
 
                 log.LogInformation("Subscription function execution started");

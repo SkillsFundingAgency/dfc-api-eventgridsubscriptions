@@ -1,6 +1,5 @@
 ﻿using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
@@ -18,12 +17,12 @@ using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.ApiFunction
 {
-    public class DeadLetterEventGridTrigger
+    public class DeadLetterHttpTrigger
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> options;
         private readonly ISubscriptionService subscriptionService;
 
-        public DeadLetterEventGridTrigger(IOptionsMonitor<EventGridSubscriptionClientOptions> options, ISubscriptionService subscriptionService)
+        public DeadLetterHttpTrigger(IOptionsMonitor<EventGridSubscriptionClientOptions> options, ISubscriptionService subscriptionService)
         {
             this.options = options;
             this.subscriptionService = subscriptionService;
@@ -34,7 +33,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             if (Activity.Current == null)
             {
-                Activity.Current = new Activity($"{nameof(DeadLetterEventGridTrigger)}").Start();
+                Activity.Current = new Activity($"{nameof(DeadLetterHttpTrigger)}").Start();
             }
 
             if (req == null)
