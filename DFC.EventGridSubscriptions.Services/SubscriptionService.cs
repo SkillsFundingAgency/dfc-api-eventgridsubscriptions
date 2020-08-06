@@ -95,18 +95,18 @@ namespace DFC.EventGridSubscriptions.Services
             {
                 subscription.StaleCount++;
 
-                if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionThreshold)
-                {
-                    //Remove the subscription
-                    await DeleteSubscription(subscriptionName);
-                    subscription.Status = SubscriptionStatus.Removed;
-                }
-
                 subscription.LastModified = DateTime.UtcNow;
                 subscription.LastStale = DateTime.UtcNow;
 
                 var result = await documentService.UpsertAsync(subscription);
-                return result;
+
+                if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionThreshold)
+                {
+                    //Remove the subscription
+                    await DeleteSubscription(subscriptionName);
+                }
+
+                return HttpStatusCode.OK; ;
             }
 
             return HttpStatusCode.OK;
