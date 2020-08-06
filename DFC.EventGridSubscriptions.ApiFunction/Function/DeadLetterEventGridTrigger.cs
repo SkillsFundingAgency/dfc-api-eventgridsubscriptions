@@ -79,10 +79,12 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                         var blobString = $"{options.CurrentValue.DeadLetterBlobContainerName}/blobs/{options.CurrentValue.TopicName}/";
 
-                        int startIndex = eventData.Url.IndexOf(blobString, StringComparison.CurrentCultureIgnoreCase) + blobString.Length;
-                        int endIndex = eventData.Url.IndexOf("/", startIndex, StringComparison.CurrentCultureIgnoreCase);
-
+                        int startIndex = eventData.Url.IndexOf(blobString, StringComparison.OrdinalIgnoreCase);
                         log.LogInformation($"Start Index: {startIndex}");
+
+                        startIndex += blobString.Length;
+                        int endIndex = eventData.Url.IndexOf("/", startIndex, StringComparison.OrdinalIgnoreCase);
+
                         log.LogInformation($"End Index: {endIndex}");
 
                         var subscriberName = eventData.Url[startIndex..endIndex];
