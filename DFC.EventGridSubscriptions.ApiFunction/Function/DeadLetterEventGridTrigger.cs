@@ -79,6 +79,8 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                         var blobString = $"{options.CurrentValue.DeadLetterBlobContainerName}/blobs/{options.CurrentValue.TopicName}/";
 
+                        log.LogInformation($"Looking for Blob string:{blobString}");
+
                         int startIndex = eventData.Url.IndexOf(blobString, StringComparison.OrdinalIgnoreCase);
                         log.LogInformation($"Start Index: {startIndex}");
 
