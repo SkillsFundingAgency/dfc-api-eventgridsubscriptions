@@ -59,15 +59,17 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 #nullable enable
             SubscriptionModel? subscription = null;
 #nullable disable
+
             A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
 
-            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
 
             //Act
             var result = await serviceToTest.AddSubscription(new SubscriptionSettings { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber" });
 
             //Assert
             Assert.Equal(HttpStatusCode.Created, result);
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
         }
