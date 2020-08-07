@@ -22,8 +22,6 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
         public DeadLetterHttpTriggerTests()
         {
-            _request = A.Fake<HttpRequestMessage>();
-
             subscriptionRegistrationService = A.Fake<ISubscriptionService>();
 
             eventGridSubscriptionClientOptions = A.Fake<IOptionsMonitor<EventGridSubscriptionClientOptions>>();
