@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DFC.EventGridSubscriptions.Data
 {
+    [ExcludeFromCodeCoverage]
     public class DeadLetterEvent
     {
         //

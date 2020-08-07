@@ -3,9 +3,11 @@ using DFC.Compui.Telemetry.Models;
 using DFC.EventGridSubscriptions.Data.Enums;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DFC.EventGridSubscriptions.Data
 {
+    [ExcludeFromCodeCoverage]
     public class SubscriptionModel : RequestTrace, IDocumentModel
     {
         [JsonProperty("id")]
