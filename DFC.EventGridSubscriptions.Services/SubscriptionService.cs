@@ -34,30 +34,17 @@ namespace DFC.EventGridSubscriptions.Services
         {
             try
             {
-                if (request == null)
-                {
-                    throw new ArgumentNullException(nameof(request));
-                }
-
-                if (string.IsNullOrEmpty(request.Name))
-                {
-                    throw new ArgumentException(nameof(request.Name));
-                }
-
-                if (request.Endpoint == null)
-                {
-                    throw new ArgumentException(nameof(request.Name));
-                }
+                ValidateRequest(request);
 
                 logger.LogInformation($"{nameof(AddSubscription)} called for subscription: {request.Name}");
 
                 await CreateEventGridEventSubscriptionAsync(request.Name!, request.Endpoint!.ToString(), request.Filter);
 
-                var existingSubscription = await documentService.GetAsync(x => x.Name == request.Name.ToLowerInvariant());
+                var existingSubscription = await documentService.GetAsync(x => x.Name == request.Name!.ToLowerInvariant());
 
                 if (existingSubscription == null)
                 {
-                    await documentService.UpsertAsync(new SubscriptionModel { Id = Guid.NewGuid(), LastModified = DateTime.UtcNow, PartitionKey = request.Name.ToLowerInvariant(), Name = request.Name.ToLowerInvariant(), StaleCount = 0, Status = SubscriptionStatus.Active });
+                    await documentService.UpsertAsync(new SubscriptionModel { Id = Guid.NewGuid(), LastModified = DateTime.UtcNow, PartitionKey = request.Name!.ToLowerInvariant(), Name = request.Name.ToLowerInvariant(), StaleCount = 0, Status = SubscriptionStatus.Active });
                 }
                 else
                 {
@@ -77,18 +64,36 @@ namespace DFC.EventGridSubscriptions.Services
             }
         }
 
-        public async Task<HttpStatusCode> StaleSubscription(string subscriptionName)
+        private static void ValidateRequest(SubscriptionSettings request)
         {
-            if (string.IsNullOrEmpty(subscriptionName))
+            if (request == null)
             {
-                throw new ArgumentNullException(nameof(subscriptionName));
+                throw new ArgumentNullException(nameof(request));
             }
 
-            var subscription = await documentService.GetAsync(x => x.Name == subscriptionName.ToLowerInvariant());
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                throw new ArgumentException(nameof(request.Name));
+            }
+
+            if (request.Endpoint == null)
+            {
+                throw new ArgumentException(nameof(request.Name));
+            }
+        }
+
+        public async Task<HttpStatusCode> StaleSubscription(string subscriberName)
+        {
+            if (string.IsNullOrEmpty(subscriberName))
+            {
+                throw new ArgumentNullException(nameof(subscriberName));
+            }
+
+            var subscription = await documentService.GetAsync(x => x.Name == subscriberName.ToLowerInvariant());
 
             if (subscription == null)
             {
-                throw new InvalidDataException($"Subscription {subscriptionName} is null in {nameof(StaleSubscription)}");
+                throw new InvalidDataException($"Subscription {subscriberName} is null in {nameof(StaleSubscription)}");
             }
 
             if (subscription.LastStale == null || subscription.LastStale + eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionInterval < DateTime.UtcNow)
@@ -103,7 +108,7 @@ namespace DFC.EventGridSubscriptions.Services
                 if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionThreshold)
                 {
                     //Remove the subscription
-                    await DeleteSubscription(subscriptionName);
+                    await DeleteSubscription(subscriberName);
                 }
 
                 return HttpStatusCode.OK; ;

@@ -54,7 +54,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             builder.Services.AddEventGridManagementClient();
 
             var cosmosDbConnectionEventGridSubscriptions = config.GetSection("Configuration:CosmosDbConnections:EventGridSubscriptions").Get<CosmosDbConnection>();
-            builder.Services.AddDocumentServices<SubscriptionModel>(cosmosDbConnectionEventGridSubscriptions, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT" ? true : false);
+            builder.Services.AddDocumentServices<SubscriptionModel>(cosmosDbConnectionEventGridSubscriptions, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT");
         }
 
         private static string GetCustomSettingsPath()
