@@ -45,9 +45,15 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
             foreach (EventGridEvent eventGridEvent in eventGridEvents)
             {
-                if (eventGridEvent.Data is SubscriptionValidationEventData)
+                if (eventGridEvent.Data.GetType() == typeof(SubscriptionValidationEventData))
                 {
-                    var eventData = (SubscriptionValidationEventData)eventGridEvent.Data;
+                    var eventData = eventGridEvent.Data as SubscriptionValidationEventData;
+
+                    if (eventData == null)
+                    {
+                        throw new InvalidDataException($"{nameof(SubscriptionValidationEventData)} in EventGridEvent {eventGridEvent.Id} is null");
+                    }
+
                     log.LogInformation($"Got SubscriptionValidation event data, validation code: {eventData.ValidationCode}, topic: {eventGridEvent.Topic}");
 
                     var responseData = new SubscriptionValidationResponse()

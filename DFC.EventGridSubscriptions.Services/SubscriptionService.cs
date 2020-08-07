@@ -111,7 +111,7 @@ namespace DFC.EventGridSubscriptions.Services
                     await DeleteSubscription(subscriberName);
                 }
 
-                return HttpStatusCode.OK; ;
+                return result;
             }
 
             return HttpStatusCode.OK;

@@ -38,7 +38,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            
+
             var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
@@ -56,7 +56,9 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
 
+#nullable enable
             SubscriptionModel? subscription = null;
+#nullable disable
             A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
 
             var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
@@ -217,15 +219,16 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             //Act
             //Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(async ()=> await serviceToTest.StaleSubscription(null)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await serviceToTest.StaleSubscription(null)).ConfigureAwait(false);
         }
 
         [Fact]
         public async Task SubscriptionRegistrationServiceStaleSubscriptionWhenGetDocmentNullThrowsException()
         {
             //Arrange
+#nullable enable
             SubscriptionModel? subscription = null;
-
+#nullable disable
             A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
             var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
 
