@@ -225,6 +225,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             SubscriptionModel? subscription = null;
+
             A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
             var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
 

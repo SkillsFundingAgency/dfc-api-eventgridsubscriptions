@@ -31,15 +31,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         [FunctionName("ProcessDeadLetter")]
         public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "DeadLetter/api/updates")] HttpRequestMessage req, ILogger log)
         {
-            if (Activity.Current == null)
-            {
-                Activity.Current = new Activity($"{nameof(DeadLetterHttpTrigger)}").Start();
-            }
-
-            if (req == null)
-            {
-                throw new ArgumentNullException(nameof(req));
-            }
+            Initialise(req);
 
             log.LogInformation($"C# HTTP trigger function begun");
             string response = string.Empty;
@@ -68,16 +60,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         Content = new StringContent(JsonConvert.SerializeObject(responseData), Encoding.UTF8, "application/json"),
                     };
                 }
-                else if (eventGridEvent.Data is StorageBlobCreatedEventData)
+                else if (eventGridEvent.Data.GetType() == typeof(StorageBlobCreatedEventData))
                 {
                     if (options.CurrentValue.DeadLetterBlobContainerName == null)
                     {
                         throw new ArgumentException(nameof(options.CurrentValue.DeadLetterBlobContainerName));
                     }
 
-                    log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event started");
-
-                    var eventData = (StorageBlobCreatedEventData)eventGridEvent.Data;
+                    var eventData = eventGridEvent.Data as StorageBlobCreatedEventData;
 
                     if (eventData == null)
                     {
@@ -97,9 +87,8 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         log.LogError($"Dead Lettered Event, Blob URL: {eventData.Url}, SubscriberName {subscriberName}");
 
                         var result = await subscriptionService.StaleSubscription(subscriberName).ConfigureAwait(false);
+                        return new HttpResponseMessage(result);
                     }
-
-                    log.LogInformation($"Processing {nameof(StorageBlobCreatedEventData)} event completed");
                 }
             }
 
@@ -107,6 +96,19 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             {
                 Content = new StringContent(JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json"),
             };
+        }
+
+        private static void Initialise(HttpRequestMessage req)
+        {
+            if (Activity.Current == null)
+            {
+                Activity.Current = new Activity($"{nameof(DeadLetterHttpTrigger)}").Start();
+            }
+
+            if (req == null)
+            {
+                throw new ArgumentNullException(nameof(req));
+            }
         }
 
         //if (eventGridEvent == null)
