@@ -96,7 +96,7 @@ namespace DFC.EventGridSubscriptions.Services
                 throw new InvalidDataException($"Subscription {subscriberName} is null in {nameof(StaleSubscription)}");
             }
 
-            if (subscription.LastStale == null || subscription.LastStale + eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionInterval < DateTime.UtcNow)
+            if (subscription.LastStale == null || subscription.LastStale + eventGridSubscriptionClientOptions.CurrentValue.StaleSubscriptionInterval < DateTime.UtcNow)
             {
                 subscription.StaleCount++;
 
@@ -105,7 +105,7 @@ namespace DFC.EventGridSubscriptions.Services
 
                 var result = await documentService.UpsertAsync(subscription);
 
-                if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubsriptionThreshold)
+                if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubscriptionThreshold)
                 {
                     //Remove the subscription
                     await DeleteSubscription(subscriberName);

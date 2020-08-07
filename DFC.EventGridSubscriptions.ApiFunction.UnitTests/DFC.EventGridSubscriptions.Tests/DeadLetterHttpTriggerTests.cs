@@ -100,22 +100,5 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
             return models;
         }
-
-        //private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
-        //{
-        //    var advancedFilters = new List<SubscriptionPropertyContainsFilter>();
-
-        //    for (int i = 0; i < numberOfFilters; i++)
-        //    {
-        //        advancedFilters.Add(new SubscriptionPropertyContainsFilter { Key = "subject", Values = new List<string> { "a", "b", "c" }.ToArray() });
-        //    }
-
-        //    return JsonConvert.SerializeObject(new SubscriptionSettings
-        //    {
-        //        Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
-        //        Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
-        //        Name = includeName ? subscriptionName : null
-        //    });
-        //}
     }
 }

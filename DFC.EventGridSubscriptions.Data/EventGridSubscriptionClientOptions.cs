@@ -13,7 +13,7 @@ namespace DFC.EventGridSubscriptions.Data
         public string? DeadLetterBlobResourceId { get; set; }
         public int? RetryPolicyEventTimeToLiveInMinutes { get; set; }
         public int? RetryPolicyMaxDeliveryAttempts { get; set; }
-        public TimeSpan? StaleSubsriptionInterval { get; set; }
-        public int StaleSubsriptionThreshold { get; set; }
+        public TimeSpan? StaleSubscriptionInterval { get; set; }
+        public int StaleSubscriptionThreshold { get; set; }
     }
 }

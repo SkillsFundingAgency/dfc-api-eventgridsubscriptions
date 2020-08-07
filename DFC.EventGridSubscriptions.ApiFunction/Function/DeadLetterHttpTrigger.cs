@@ -80,7 +80,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         throw new InvalidDataException($"{nameof(StorageBlobCreatedEventData)} in EventGridEvent {eventGridEvent.Id} is null");
                     }
 
-                    if (eventData.Url != null && eventData.Url!.ToUpperInvariant().Contains(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.CurrentCultureIgnoreCase))
+                    if (eventData?.Url.Contains(options.CurrentValue.DeadLetterBlobContainerName, StringComparison.OrdinalIgnoreCase) == true)
                     {
                         log.LogInformation("Processing Dead Lettered Event");
 

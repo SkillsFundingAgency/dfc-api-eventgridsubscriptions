@@ -30,7 +30,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
 
         public SubscriptionRegistrationServiceTests()
         {
-            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { DeadLetterBlobContainerName = "DeadLetterContainer", StaleSubsriptionInterval = new TimeSpan(0, 0, 0, 10), StaleSubsriptionThreshold = 2 });
+            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { DeadLetterBlobContainerName = "DeadLetterContainer", StaleSubscriptionInterval = new TimeSpan(0, 0, 0, 10), StaleSubscriptionThreshold = 2 });
         }
 
         [Fact]
@@ -262,7 +262,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
             A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new EventSubscription("someid", "a-test-subscription", "EventGridTopic"));
             A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).Returns(HttpStatusCode.OK);
-            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { StaleSubsriptionThreshold = 1, StaleSubsriptionInterval = new TimeSpan(0, 0, 10) });
+            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { StaleSubscriptionThreshold = 1, StaleSubscriptionInterval = new TimeSpan(0, 0, 10) });
             var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
 
             //Act
