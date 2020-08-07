@@ -1,10 +1,12 @@
 ﻿using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
 using FakeItEasy;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -35,389 +37,88 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         [Fact]
         public async Task DeadLetterHttpTriggerNullRequestThrowsException()
         {
-            //Act
-            var result = await RunFunction(null);
-
-            var badRequestObjectResult = result as BadRequestObjectResult;
-
+            // Arrange
+            // Act
             // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
-            Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await RunFunction(null)).ConfigureAwait(false);
         }
 
         [Fact]
-        public async Task ExecutePostWhenNullRequestMethodBadRequestObjectResult()
+        public async Task DeadLetterHttpTriggerWhenPassedValidationEventReturnsCode()
         {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
+            // Arrange
+            string expectedValidationCode = Guid.NewGuid().ToString();
+            var eventGridEvents = BuildValidEventGridEvent(Microsoft.Azure.EventGrid.EventTypes.EventGridSubscriptionValidationEvent, new SubscriptionValidationEventData(expectedValidationCode, "https://somewhere.com"));
 
-            //Act
-            var result = await RunFunction(null);
 
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            // Act
+            var result = await RunFunction(new HttpRequestMessage { Content = new StringContent(JsonConvert.SerializeObject(eventGridEvents)) });
 
             // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
-            Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
+            Assert.Equal(200, (int)result.StatusCode);
+            var responseResult = Assert.IsType<HttpResponseMessage>(result);
+            var response = JsonConvert.DeserializeObject<SubscriptionValidationResponse>(await responseResult.Content.ReadAsStringAsync());
+
+            Assert.Equal(expectedValidationCode, response.ValidationResponse);
         }
 
         [Fact]
-        public async Task ExecutePostWhenNullRequestBodyBadRequestObjectResult()
+        public async Task DeadLetterHttpTriggerWhenPassedDeadLetterEventReturnsOk()
         {
-            //Arrange
-            A.CallTo(() => _request.Body).Returns(null);
+            // Arrange
+            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { DeadLetterBlobContainerName = "event-grid-dead-letter-events", TopicName = "dfc-dev-stax-egt" });
+            A.CallTo(() => subscriptionRegistrationService.StaleSubscription(A<string>.Ignored)).Returns(HttpStatusCode.OK);
+            
+            string expectedValidationCode = Guid.NewGuid().ToString();
+            var eventGridEvents = BuildValidEventGridEvent(Microsoft.Azure.EventGrid.EventTypes.StorageBlobCreatedEvent, new StorageBlobCreatedEventData() { Url = "https://dfcdevcompuisharedstr.blob.core.windows.net/event-grid-dead-letter-events/dfc-dev-stax-egt/TEST-SUBSCRIPTION-CONTACTUS-TEST/2020/8/6/9/76d47aaa-be54-495e-993f-4bb1ba65cddb.json" });
 
-            //Act
-            var result = await RunFunction("test-subscription");
-
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            // Act
+            var result = await RunFunction(new HttpRequestMessage { Content = new StringContent(JsonConvert.SerializeObject(eventGridEvents)) });
 
             // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
-            Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
+            Assert.Equal(200, (int)result.StatusCode);
+            A.CallTo(() => subscriptionRegistrationService.StaleSubscription(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         }
 
-        [Fact]
-        public async Task ExecutePutWhenPutRequestUnprocessableEntityObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("PUT");
-
-            //Act
-            var result = await RunFunction("test-subscription");
-
-            var unprocessableEntityObjectResult = result as UnprocessableEntityObjectResult;
-
-            // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is UnprocessableEntityObjectResult);
-            Assert.Equal((int?)HttpStatusCode.UnprocessableEntity, unprocessableEntityObjectResult.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecutePostWhenZeroLengthBodyBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Body).Returns(A.Fake<Stream>());
-
-            //Act
-            var result = await RunFunction("test-subscription");
-
-            var badRequestObjectResult = result as BadRequestObjectResult;
-
-            // Assert
-            Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
-            Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledReturnsCreatedResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
-
-            //Act
-            CreatedResult result = (CreatedResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledReturnsInternalServerErrorResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.InternalServerError);
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
-
-            //Act
-            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsInternalServerErrorResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.InternalServerError);
-            A.CallTo(() => _request.Method).Returns("DELETE");
-
-            //Act
-            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction("test-subscription-name");
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionNoSubscriptionNameCalledReturnsBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, false))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionShortSubscriptionNameCalledReturnsBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "te"))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionBadSubscriptionNameCalledReturnsBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "#!*something^&*!"))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledNoEndpointReturnsBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(false, true, true, true))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledNoAdvancedFilterReturnsCreatedObjectResult()
-        {
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
-
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, false, true))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            CreatedResult result = (CreatedResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.Created, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFiltersExceedMaximumReturnsBadRequestResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1, MaximumAdvancedFilterValues = 25 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFilterValuesExceedMaximumReturnsBadRequestResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenAddSubscriptionCalledRelativeEndpointUriReturnsBadRequestResult()
-        {
-            //Arrange
-            A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 1, "somewhere.com/somelocation", false))));
-            A.CallTo(() => eventGridSubscriptionClientOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsOkObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.OK);
-            A.CallTo(() => _request.Method).Returns("DELETE");
-
-            //Act
-            OkObjectResult result = (OkObjectResult)await RunFunction("test-subscription-name");
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenGetSubscriptionCalledReturnsOkObjectResultWithSubscription()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.GetSubscription(A<string>.Ignored)).Returns(new EventSubscription("testid", "testsubscription", "EventGridSubscription"));
-            A.CallTo(() => _request.Method).Returns("GET");
-
-            //Act
-            OkObjectResult result = (OkObjectResult)await RunFunction("test-subscription-name");
-
-            var resultAsSubscription = (EventSubscription)result.Value;
-
-            // Assert
-            Assert.IsAssignableFrom<EventSubscription>(result.Value);
-            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal("testid", resultAsSubscription.Id);
-            Assert.Equal("testsubscription", resultAsSubscription.Name);
-            Assert.Equal("EventGridSubscription", resultAsSubscription.Type);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenGetSubscriptionsCalledReturnsOkObjectResultWithSubscriptions()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.GetAllSubscriptions()).Returns(new List<EventSubscription>() { new EventSubscription("testid", "testsubscription", "EventGridSubscription"), new EventSubscription("testid-2", "testsubscription-2", "EventGridSubscription") });
-            A.CallTo(() => _request.Method).Returns("GET");
-
-            //Act
-            OkObjectResult result = (OkObjectResult)await RunFunction(string.Empty);
-
-            var resultAsSubscription = (List<EventSubscription>)result.Value;
-
-            // Assert
-            Assert.IsAssignableFrom<List<EventSubscription>>(result.Value);
-            Assert.Equal((int?)HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal(2, resultAsSubscription.Count);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsGenericInternalServerErrorResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<ArithmeticException>();
-            A.CallTo(() => _request.Method).Returns("DELETE");
-
-            //Act
-            InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction("test-subscription-name");
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.InternalServerError, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsServiceUnavailableResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
-            A.CallTo(() => _request.Method).Returns("DELETE");
-            //Execute async manually - happens automatically in request pipeline
-            var context = new ActionContext();
-            context.HttpContext = A.Fake<HttpContext>();
-
-            //Act
-            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
-            await result.ExecuteResultAsync(context);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, context.HttpContext.Response.StatusCode);
-            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, (int)result.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsNullActionContextParameter()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
-            A.CallTo(() => _request.Method).Returns("DELETE");
-            //Execute async manually - happens automatically in request pipeline
-            var context = new ActionContext();
-            context.HttpContext = A.Fake<HttpContext>();
-
-            //Act
-            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
-
-            // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await result.ExecuteResultAsync(null).ConfigureAwait(false));
-        }
-
-        [Fact]
-        public async Task ExecuteWhenDeleteSubscriptionCalledNullSubscriptionNameReturnsBadRequestObjectResult()
-        {
-            //Arrange
-            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Returns(HttpStatusCode.OK);
-            A.CallTo(() => _request.Method).Returns("DELETE");
-
-            //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
-
-            // Assert
-            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
-        }
 
         private async Task<HttpResponseMessage> RunFunction(HttpRequestMessage message)
         {
             return await _executeFunction.Run(message, _log).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
+        protected static EventGridEvent[] BuildValidEventGridEvent<TModel>(string eventType, TModel data)
         {
-            var advancedFilters = new List<SubscriptionPropertyContainsFilter>();
-
-            for (int i = 0; i < numberOfFilters; i++)
+            var models = new EventGridEvent[]
             {
-                advancedFilters.Add(new SubscriptionPropertyContainsFilter { Key = "subject", Values = new List<string> { "a", "b", "c" }.ToArray() });
-            }
+                new EventGridEvent
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Subject = "test/a-canonical-name",
+                    Data = data,
+                    EventType = eventType,
+                    EventTime = DateTime.Now,
+                    DataVersion = "1.0",
+                },
+            };
 
-            return JsonConvert.SerializeObject(new SubscriptionSettings
-            {
-                Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
-                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
-                Name = includeName ? subscriptionName : null
-            });
+            return models;
         }
+
+        //private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
+        //{
+        //    var advancedFilters = new List<SubscriptionPropertyContainsFilter>();
+
+        //    for (int i = 0; i < numberOfFilters; i++)
+        //    {
+        //        advancedFilters.Add(new SubscriptionPropertyContainsFilter { Key = "subject", Values = new List<string> { "a", "b", "c" }.ToArray() });
+        //    }
+
+        //    return JsonConvert.SerializeObject(new SubscriptionSettings
+        //    {
+        //        Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
+        //        Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
+        //        Name = includeName ? subscriptionName : null
+        //    });
+        //}
     }
 }
