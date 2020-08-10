@@ -101,4 +101,4 @@ At the time of writing the limits for advanced filters are as follows:
 - 25 values in an Advanced Filter item collection, across all applied advanced filters
 
 More information can be found here:
-https://docs.microsoft.com/en-us/azure/event-grid/event-filterin
+https://docs.microsoft.com/en-us/azure/event-grid/event-filtering
