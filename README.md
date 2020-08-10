@@ -65,12 +65,13 @@ Advanced Filters are available from an Enum:
         BoolEquals = 11,
     }
 ```
-  Body:
+  Body (note: leave IncludeEventTypes empty to subscribe to all events):
 ```
 {
     "Name":"test-subscription",
-    "Endpoint":"https://dfc-dev-app-contactus-as.azurewebsites.net/api/webhook/receiveevents",
+    "Endpoint":"https://somewhere.azurewebsites.net/api/webhook/receiveevents",
     "Filter":{
+        "IncludeEventTypes":["published","draft","unpublished"],
         "BeginsWith":"atestbeginswith",
         "EndsWith":"atestendswith",
         "AdvancedFilters":[
