@@ -1,3 +1,4 @@
+
 # Digital First Careers – Subscriptions API
 
 ## Introduction
@@ -45,16 +46,39 @@ This API is deployed via an Azure DevOps release pipeline.
 Supported API Endpoints:
 
 1) POST - /Execute
-    Body:
+
+Advanced Filters are available from an Enum:
+```
+ public enum FilterType
+    {
+        StringContains = 0,
+        StringBeginsWith = 1,
+        StringEndsWith = 2,
+        StringIn = 3,
+        StringNotIn = 4,
+        NumberIn = 5,
+        NumberNotIn = 6,
+        NumberLessThan = 7,
+        NumberLessThanOrEquals = 8,
+        NumberGreaterThanOrEquals = 9,
+        NumberGreaterThan = 10,
+        BoolEquals = 11,
+    }
+```
+  Body:
 ```
 {
     "Name":"test-subscription",
-    "Endpoint":"https://somewhere.azurewebsites.net/api/webhook/receiveevents",
+    "Endpoint":"https://dfc-dev-app-contactus-as.azurewebsites.net/api/webhook/receiveevents",
     "Filter":{
         "BeginsWith":"atestbeginswith",
         "EndsWith":"atestendswith",
-        "IncludeEventTypes":["blobcreated","contentcreated"],
-        "PropertyContainsFilters":[{"key":"subject", "values":["guid1","guid2","emails"]},{"key":"subject", "values":["guid1","guid2","emails"]}]
+        "AdvancedFilters":[
+            {"Property":"subject", "Type":"StringContains", "values":["a","b","c"]},
+            {"Property":"subject", "Type":"NumberLessThan", "values":[1]},
+            {"Property":"subject", "Type":"NumberLessThanOrEquals", "values":[2]}
+
+        ]
     }
 }
 ```
@@ -76,4 +100,4 @@ At the time of writing the limits for advanced filters are as follows:
 - 25 values in an Advanced Filter item collection, across all applied advanced filters
 
 More information can be found here:
-https://docs.microsoft.com/en-us/azure/event-grid/event-filtering
+https://docs.microsoft.com/en-us/azure/event-grid/event-filterin
