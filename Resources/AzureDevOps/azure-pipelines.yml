@@ -13,12 +13,6 @@ pool:
   - msbuild
   - visualstudio
 
-trigger: 
-  branches:
-    include: 
-    - dev
-    - master
-
 pr:
   branches:
     include: 
@@ -84,7 +78,7 @@ stages:
         DotNetCoreVersion: '3.1.100'
 
 - stage: DeployToDevEventGridSubscriptions
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'),eq(variables['Build.SourceBranch'], 'refs/heads/master')))
   displayName: Deploy to DEV_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -126,7 +120,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployToSITEventGridSubscriptions
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'),eq(variables['Build.SourceBranch'], 'refs/heads/master')))
   displayName: Deploy to SIT_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
