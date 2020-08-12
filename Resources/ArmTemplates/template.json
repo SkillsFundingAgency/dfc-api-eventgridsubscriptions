@@ -209,7 +209,7 @@
                             },
                             {
                                 "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__CollectionId",
-                                "value": "subscription"
+                                "value": "subscriptions"
                             },
                             {
                                 "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__PartitionKey",
