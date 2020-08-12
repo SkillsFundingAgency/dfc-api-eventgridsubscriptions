@@ -34,6 +34,12 @@
         },
         "ApiName": {
             "value": "api-name"
+        },
+        "cosmosDbName": {
+            "value": "__cosmosDbName__"
+        },
+        "cosmosDbKey": {
+            "value": "__cosmosDbKey__"
         }
     }
 }

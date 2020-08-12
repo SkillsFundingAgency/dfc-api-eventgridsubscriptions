@@ -39,6 +39,12 @@
         },
         "ApiName": {
             "type": "string"
+        },
+        "cosmosDbName": {
+            "type": "string"
+        },
+        "cosmosDbKey": {
+            "type": "securestring"
         }
     },
     "variables": {
@@ -48,7 +54,11 @@
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
-        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]"
+        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]",
+        "cosmosDbCollectionPartitionKey": "/PartitionKey",
+        "cosmosDbDatabaseName": "dfc-eventstore",
+        "cosmosDbEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]"
+
     },
     "resources": [
         {
@@ -184,6 +194,26 @@
                             {
                                 "name": "EventGridSubscriptionClientOptions__TopicName",
                                 "value": "[parameters('EventGridTopicName')]"
+                            },
+                                                        {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__AccessKey",
+                                "value": "[parameters('cosmosDbKey')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__EndpointUrl",
+                                "value": "[variables('cosmosDbEndpoint')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__DatabaseId",
+                                "value": "[variables('cosmosDbDatabaseName')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__CollectionId",
+                                "value": "subscription"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__PartitionKey",
+                                "value": "[variables('cosmosDbCollectionPartitionKey')]"
                             }
                         ]
                     }

@@ -34,6 +34,12 @@
         },
         "ApiName": {
             "value": "__ApiName__"
+        },
+        "cosmosDbName": {
+            "value": "__appSharedCosmosDBName__"
+        },
+        "cosmosDbKey": {
+            "value": "__appSharedCosmosPrimaryKey__"
         }
     }
 }
