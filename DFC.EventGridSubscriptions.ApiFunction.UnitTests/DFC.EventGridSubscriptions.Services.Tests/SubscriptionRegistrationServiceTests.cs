@@ -1,13 +1,19 @@
-﻿using DFC.Compui.Subscriptions.Pkg.Data;
+﻿using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using DFC.Compui.Cosmos.Contracts;
+using DFC.Compui.Subscriptions.Pkg.Data;
 using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using FakeItEasy;
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.Management.EventGrid.Models;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,15 +24,22 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
     public class SubscriptionRegistrationServiceTests
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> fakeClientOptions = A.Fake<IOptionsMonitor<EventGridSubscriptionClientOptions>>();
-        private readonly ILogger<SubscriptionRegistrationService> fakeLogger = A.Fake<ILogger<SubscriptionRegistrationService>>();
+        private readonly ILogger<SubscriptionService> fakeLogger = A.Fake<ILogger<SubscriptionService>>();
         private readonly IEventGridManagementClientWrapper fakeClient = A.Fake<IEventGridManagementClientWrapper>();
+        private readonly IDocumentService<SubscriptionModel> fakeDocumentClient = A.Fake<IDocumentService<SubscriptionModel>>();
+
+        public SubscriptionRegistrationServiceTests()
+        {
+            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { DeadLetterBlobContainerName = "DeadLetterContainer", StaleSubscriptionInterval = new TimeSpan(0, 0, 0, 10), StaleSubscriptionThreshold = 2 });
+        }
 
         [Fact]
         public async Task SubscriptionRegistrationServiceWhenAddSubscriptionAddsSubscription()
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             var result = await serviceToTest.AddSubscription(new SubscriptionSettings { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber" });
@@ -38,11 +51,35 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task SubscriptionRegistrationServiceWhenAddSubscriptionNullDocumentAddsSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+
+#nullable enable
+            SubscriptionModel? subscription = null;
+#nullable disable
+
+            A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
+
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.AddSubscription(new SubscriptionSettings { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber" });
+
+            //Assert
+            Assert.Equal(HttpStatusCode.Created, result);
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Subscription_CreateOrUpdateAsync(A<string>.Ignored, A<string>.Ignored, A<EventSubscription>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
         public async Task SubscriptionRegistrationServiceWhenAddSubscription5AdvancedFiltersAddsSubscription()
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             var result = await serviceToTest.AddSubscription(new SubscriptionSettings { Endpoint = new Uri("http://somehost.com/awebhook"), Name = "Test Subscriber", Filter = new SubscriptionFilter { PropertyContainsFilters = new List<SubscriptionPropertyContainsFilter> { new SubscriptionPropertyContainsFilter() { Key = "subject", Values = new List<string> { "a", "b", "c", "d", "e" }.ToArray() } } } });
@@ -58,7 +95,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             //Assert
@@ -74,7 +111,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             //Assert
@@ -88,7 +125,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             //Assert
@@ -102,7 +139,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             //Assert
@@ -116,7 +153,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             //Assert
@@ -130,7 +167,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             var result = await serviceToTest.DeleteSubscription("a-test-subscription");
@@ -147,7 +184,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
             A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new EventSubscription("someid", "a-test-subscription", "EventGridTopic"));
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             var result = await serviceToTest.GetSubscription("a-test-subscription");
@@ -166,7 +203,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Arrange
             A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
             A.CallTo(() => fakeClient.Subscription_GetAllAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new List<EventSubscription> { new EventSubscription("someid", "a-test-subscription-1", "EventGridTopic"), new EventSubscription("someid1", "a-test-subscription-2", "EventGridTopic") });
-            var serviceToTest = new SubscriptionRegistrationService(fakeClientOptions, fakeClient, fakeLogger);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, A.Fake<IDocumentService<SubscriptionModel>>(), fakeLogger);
 
             //Act
             var result = await serviceToTest.GetAllSubscriptions();
@@ -174,6 +211,69 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Assert
             Assert.Equal(2, result.Count());
             A.CallTo(() => fakeClient.Subscription_GetAllAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceStaleSubscriptionWhenNullThrowsException()
+        {
+            //Arrange
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await serviceToTest.StaleSubscription(null)).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceStaleSubscriptionWhenGetDocmentNullThrowsException()
+        {
+            //Arrange
+#nullable enable
+            SubscriptionModel? subscription = null;
+#nullable disable
+            A.CallTo(() => fakeDocumentClient.GetAsync(A<Expression<Func<SubscriptionModel, bool>>>.Ignored)).Returns(subscription);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
+
+            //Act
+            //Assert
+            await Assert.ThrowsAsync<InvalidDataException>(async () => await serviceToTest.StaleSubscription("test-subscription")).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenFirstStaleSubscriptionUpdatesSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new EventSubscription("someid", "a-test-subscription", "EventGridTopic"));
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).Returns(HttpStatusCode.OK);
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.StaleSubscription("a-test-subscription");
+
+            //Assert
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeClient.Subscription_DeleteAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
+            Assert.Equal(200, (int)result);
+        }
+
+        [Fact]
+        public async Task SubscriptionRegistrationServiceWhenStaleSubscriptionExceedsThresholdUpdatesAndDeletesSubscription()
+        {
+            //Arrange
+            A.CallTo(() => fakeClient.Topic_GetAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new Topic("location", "someid", "sometopic"));
+            A.CallTo(() => fakeClient.Subscription_GetByIdAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(new EventSubscription("someid", "a-test-subscription", "EventGridTopic"));
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).Returns(HttpStatusCode.OK);
+            A.CallTo(() => fakeClientOptions.CurrentValue).Returns(new EventGridSubscriptionClientOptions { StaleSubscriptionThreshold = 1, StaleSubscriptionInterval = new TimeSpan(0, 0, 10) });
+            var serviceToTest = new SubscriptionService(fakeClientOptions, fakeClient, fakeDocumentClient, fakeLogger);
+
+            //Act
+            var result = await serviceToTest.StaleSubscription("a-test-subscription");
+
+            //Assert
+            A.CallTo(() => fakeDocumentClient.UpsertAsync(A<SubscriptionModel>.Ignored)).MustHaveHappenedTwiceExactly();
+            A.CallTo(() => fakeClient.Subscription_DeleteAsync(A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
+            Assert.Equal(200, (int)result);
         }
     }
 }

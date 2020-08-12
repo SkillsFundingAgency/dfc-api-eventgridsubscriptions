@@ -1,27 +1,32 @@
-﻿using DFC.Compui.Subscriptions.Pkg.Data;
+﻿using DFC.Compui.Cosmos.Contracts;
+using DFC.Compui.Subscriptions.Pkg.Data;
 using DFC.Compui.Subscriptions.Pkg.NetStandard.Converters;
 using DFC.EventGridSubscriptions.Data;
+using DFC.EventGridSubscriptions.Data.Enums;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
 namespace DFC.EventGridSubscriptions.Services
 {
-    public class SubscriptionRegistrationService : ISubscriptionRegistrationService
+    public class SubscriptionService : ISubscriptionService
     {
         private readonly IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions;
         private readonly IEventGridManagementClientWrapper eventGridManagementClient;
-        private readonly ILogger<SubscriptionRegistrationService> logger;
+        private readonly IDocumentService<SubscriptionModel> documentService;
+        private readonly ILogger<SubscriptionService> logger;
 
-        public SubscriptionRegistrationService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions, IEventGridManagementClientWrapper eventGridManagementClient, ILogger<SubscriptionRegistrationService> logger)
+        public SubscriptionService(IOptionsMonitor<EventGridSubscriptionClientOptions> eventGridSubscriptionClientOptions, IEventGridManagementClientWrapper eventGridManagementClient, IDocumentService<SubscriptionModel> documentService, ILogger<SubscriptionService> logger)
         {
             this.eventGridSubscriptionClientOptions = eventGridSubscriptionClientOptions;
             this.eventGridManagementClient = eventGridManagementClient;
+            this.documentService = documentService;
             this.logger = logger;
         }
 
@@ -29,24 +34,26 @@ namespace DFC.EventGridSubscriptions.Services
         {
             try
             {
-                if (request == null)
-                {
-                    throw new ArgumentNullException(nameof(request));
-                }
-
-                if (string.IsNullOrEmpty(request.Name))
-                {
-                    throw new ArgumentException(nameof(request.Name));
-                }
-
-                if (request.Endpoint == null)
-                {
-                    throw new ArgumentException(nameof(request.Name));
-                }
+                ValidateRequest(request);
 
                 logger.LogInformation($"{nameof(AddSubscription)} called for subscription: {request.Name}");
 
                 await CreateEventGridEventSubscriptionAsync(request.Name!, request.Endpoint!.ToString(), request.Filter);
+
+                var existingSubscription = await documentService.GetAsync(x => x.Name == request.Name!.ToLowerInvariant());
+
+                if (existingSubscription == null)
+                {
+                    await documentService.UpsertAsync(new SubscriptionModel { Id = Guid.NewGuid(), LastModified = DateTime.UtcNow, PartitionKey = request.Name!.ToLowerInvariant(), Name = request.Name.ToLowerInvariant(), StaleCount = 0, Status = SubscriptionStatus.Active });
+                }
+                else
+                {
+                    existingSubscription.LastModified = DateTime.UtcNow;
+                    existingSubscription.StaleCount = 0;
+                    existingSubscription.Status = SubscriptionStatus.Active;
+                    existingSubscription.LastStale = null;
+                    await documentService.UpsertAsync(existingSubscription);
+                }
 
                 return HttpStatusCode.Created;
             }
@@ -55,6 +62,59 @@ namespace DFC.EventGridSubscriptions.Services
                 logger.LogError($"An error occured in {nameof(AddSubscription)} : {ex}");
                 throw;
             }
+        }
+
+        private static void ValidateRequest(SubscriptionSettings request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                throw new ArgumentException(nameof(request.Name));
+            }
+
+            if (request.Endpoint == null)
+            {
+                throw new ArgumentException(nameof(request.Name));
+            }
+        }
+
+        public async Task<HttpStatusCode> StaleSubscription(string subscriberName)
+        {
+            if (string.IsNullOrEmpty(subscriberName))
+            {
+                throw new ArgumentNullException(nameof(subscriberName));
+            }
+
+            var subscription = await documentService.GetAsync(x => x.Name == subscriberName.ToLowerInvariant());
+
+            if (subscription == null)
+            {
+                throw new InvalidDataException($"Subscription {subscriberName} is null in {nameof(StaleSubscription)}");
+            }
+
+            if (subscription.LastStale == null || subscription.LastStale + eventGridSubscriptionClientOptions.CurrentValue.StaleSubscriptionInterval < DateTime.UtcNow)
+            {
+                subscription.StaleCount++;
+
+                subscription.LastModified = DateTime.UtcNow;
+                subscription.LastStale = DateTime.UtcNow;
+
+                var result = await documentService.UpsertAsync(subscription);
+
+                if (subscription.StaleCount >= eventGridSubscriptionClientOptions.CurrentValue.StaleSubscriptionThreshold)
+                {
+                    //Remove the subscription
+                    await DeleteSubscription(subscriberName);
+                }
+
+                return result;
+            }
+
+            return HttpStatusCode.OK;
         }
 
         public async Task<HttpStatusCode> DeleteSubscription(string subscriptionName)
@@ -69,6 +129,15 @@ namespace DFC.EventGridSubscriptions.Services
                 logger.LogInformation($"{nameof(DeleteSubscription)} called for subscription: {subscriptionName}");
 
                 await DeleteEventGridEventSubscriptionAsync(subscriptionName);
+
+                var subscription = await documentService.GetAsync(x => x.Name == subscriptionName.ToLowerInvariant());
+
+                if (subscription != null)
+                {
+                    subscription.LastModified = DateTime.UtcNow;
+                    subscription.Status = SubscriptionStatus.Removed;
+                    await documentService.UpsertAsync(subscription);
+                }
 
                 return HttpStatusCode.OK;
             }
@@ -112,7 +181,17 @@ namespace DFC.EventGridSubscriptions.Services
                     SubjectEndsWith = filter.EndsWith ?? "",
                     IncludedEventTypes = filter.IncludeEventTypes ?? null,
                     AdvancedFilters = BuildAdvancedFilters(filter),
-                } : new EventSubscriptionFilter()
+                } : new EventSubscriptionFilter(),
+                DeadLetterDestination = new StorageBlobDeadLetterDestination
+                {
+                    BlobContainerName = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobContainerName,
+                    ResourceId = eventGridSubscriptionClientOptions.CurrentValue.DeadLetterBlobResourceId,
+                },
+                RetryPolicy = new RetryPolicy
+                {
+                    EventTimeToLiveInMinutes = eventGridSubscriptionClientOptions.CurrentValue.RetryPolicyEventTimeToLiveInMinutes,
+                    MaxDeliveryAttempts = eventGridSubscriptionClientOptions.CurrentValue.RetryPolicyMaxDeliveryAttempts
+                }
             };
 
             EventSubscription createdEventSubscription = await eventGridManagementClient.Subscription_CreateOrUpdateAsync(eventSubscriptionScope, eventSubscriptionName, eventSubscription);
