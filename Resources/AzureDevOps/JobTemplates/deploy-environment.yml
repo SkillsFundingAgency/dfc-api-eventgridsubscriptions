@@ -50,6 +50,7 @@ jobs:
             ArmTemplateFolder: '${{ parameters.ArmTemplateFolder }}'
 
 # Please see https://github.com/microsoft/azure-pipelines-yaml/blob/master/design/each-expression.md for more information on the each expression.
+- deployment: bob
 - ${{ each apiPartition in parameters.Apis }}:
   - ${{ each api in apiPartition }}:
     - deployment: Deploy${{ api.name }}
@@ -81,6 +82,7 @@ jobs:
                 ApimLoggerName: '${{ parameters.ApimLoggerName }}'
   
 - job: DeployEventSub
+  dependsOn: bob
   steps:
   - task: AzurePowerShell@4
     displayName: 'Create Event Subscription'
