@@ -26,14 +26,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         private readonly Execute _executeFunction;
         private readonly ILogger _log;
         private readonly HttpRequest _request;
-        private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly ISubscriptionService subscriptionRegistrationService;
         private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         public ExecuteHttpTriggerTests()
         {
             _request = A.Fake<HttpRequest>();
 
-            subscriptionRegistrationService = A.Fake<ISubscriptionRegistrationService>();
+            subscriptionRegistrationService = A.Fake<ISubscriptionService>();
 
             advancedFilterOptions = A.Fake<IOptionsMonitor<AdvancedFilterOptions>>();
 
