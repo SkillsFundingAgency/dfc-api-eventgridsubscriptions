@@ -143,7 +143,7 @@ stages:
     - task: AzurePowerShell@4
       displayName: 'Create Event Subscription'
       inputs:
-        azureSubscription: '${{ parameters.AzureSubscription }}'
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Create-Event-Subscription.ps1"
         azurePowerShellVersion: LatestVersion
 
