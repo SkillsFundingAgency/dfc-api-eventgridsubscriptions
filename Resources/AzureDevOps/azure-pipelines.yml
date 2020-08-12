@@ -124,7 +124,17 @@ stages:
         -
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
-
+  - job: DeployEventSub
+    steps:
+    - task: AzureCLI@2
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          "az eventgrid event-subscription delete --source-resource-id '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr' --name 'dfc-dead-letter'"
+          "az eventgrid event-subscription create --source-resource-id '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr' --name 'dfc-dead-letter' --endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/DeadLetter/api/updates'"
 - stage: DeployToSITEventGridSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   displayName: Deploy to SIT_EventGridSubscriptions
