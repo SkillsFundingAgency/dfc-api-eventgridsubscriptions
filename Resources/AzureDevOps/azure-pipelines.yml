@@ -135,22 +135,18 @@ stages:
   - group: dfc-shared-dev
   - group: dfc-app-shared-all
   - group: dfc-app-shared-dev
-  - group: dfc-compositeui-all
-  - template: VariableTemplates\DevEnvironmentVariables.yml
-  - name: WebAppPrefix
-    value: dfc-dev
   jobs:
   - job: DeployEventSub
     steps:
     - task: AzurePowerShell@4
       displayName: Azure CLI
       inputs:
-        azureSubscription: '$(AzureSubscription)'
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         Inline: |
           $ctx = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
           $storageid = $ctx.Id
-          New-AzStorageContainer -Name $(DeadLetterBlobContainerName)  `
+          New-AzStorageContainer -Name "$(DeadLetterBlobContainerName)"  `
             -Context $ctx  `
             -Permission blob  `
             -Verbose
