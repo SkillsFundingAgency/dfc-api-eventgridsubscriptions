@@ -25,12 +25,11 @@ Import-ApimOpenApiDefinitionFromFile -ApimResourceGroup dfc-foo-bar-rg -Instance
 try {
     # --- Build context and retrieve apiid
     Write-Host "Building APIM context for"
-    az eventgrid event-subscription create --source-resource-id '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr' --name 'dfc-dead-letter' --endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates'
-
-
-    # --- Import openapi definition
-    #Write-Host "Updating API $InstanceName\$($ApiName) from definition $($OutputFile.FullName)"
-    #Import-AzApiManagementApi -Context $Context -SpecificationFormat OpenApi -SpecificationPath $OpenApiSpecificationFile -ApiId $ApiName -Path $ApiPath -ErrorAction Stop -Verbose:$VerbosePreference
+    Set-AzContext -SubscriptionId '962cae10-2950-412a-93e3-d8ae92b17896' -Verbose
+    $containername = 'event-grid-dead-letter-events' 
+    $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-stax-editor-rg' -Name 'dfc-dev-stax-egt').Id 
+    $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
+    New-AzEventGridSubscription -ResourceId $topicid -EventSubscriptionName 'dfc-dead-letter' -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' -DeadLetterEndpoint "$($storageid)/blobServices/default/containers/$($containername)" 
 }
 catch {
    throw $_
