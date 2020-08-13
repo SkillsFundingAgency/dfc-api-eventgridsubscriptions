@@ -130,10 +130,7 @@ stages:
   displayName: Deploy Event Subscription
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
-  - group: dfc-shared-all
   - group: dfc-api-eventgridsubscriptions-dev
-  - group: dfc-shared-dev
-  - group: dfc-app-shared-all
   - group: dfc-app-shared-dev
   jobs:
   - job: DeployEventSub
@@ -143,39 +140,27 @@ stages:
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
-        Inline: |
-          $storageAccount = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
-          $ctx = $storageAccount.Context
-          $storageid = $storageAccount.Id
-          New-AzStorageContainer -Name "$(DeadLetterBlobContainerName)"  `
-            -Context $ctx  `
-            -Permission blob  `
-            -Verbose
-          New-AzEventGridSubscription  `
-            -ResourceId $storageid `
-            -EventSubscriptionName '$(DeadLetterSubscriptionName)'  `
-            -Endpoint '$(DeadLetterSubscriptionEndPoint)'  `
-            -Verbose
-        ScriptType: InlineScript
-
-          # containername = 'event-grid-dead-letter-events' 
-          # $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-app-sharedresources-rg' -Name 'dfc-dev-stax-egt').Id 
-          # $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-app-sharedresources-rg' -Name 'dfcdevappsharedstr').Id 
-          # Remove-AzEventGridSubscription `
-          #   -ResourceId $topicid `
-          #   -EventSubscriptionName 'dfc-dead-letter'
-          # New-AzEventGridSubscription  `
-          #   -ResourceId $topicid `
-          #   -EventSubscriptionName 'dfc-dead-letter' `
-          #   -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' `
-          #   -DeadLetterEndpoint "$($storageid)/blobServices/default/containers/$($containername)" 
-
-    # - task: AzurePowerShell@4
-    #   displayName: 'Create Event Subscription'
-    #   inputs:
-    #     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
-    #     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Create-Event-Subscription.ps1"
-    #     azurePowerShellVersion: LatestVersion
+        ScriptType: FilePath
+        ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Create-Event-Subscription.ps1"
+        ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)" `
+          -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)" `
+          -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)" `
+          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
+        # Inline: |
+        #   $storageAccount = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
+        #   $ctx = $storageAccount.Context
+        #   $storageid = $storageAccount.Id
+        #   New-AzStorageContainer -Name "$(DeadLetterBlobContainerName)"  `
+        #     -Context $ctx  `
+        #     -Permission blob  `
+        #     -Verbose
+        #   New-AzEventGridSubscription  `
+        #     -ResourceId $storageid `
+        #     -EventSubscriptionName '$(DeadLetterSubscriptionName)'  `
+        #     -Endpoint '$(DeadLetterSubscriptionEndPoint)'  `
+        #     -Verbose
+        # ScriptType: InlineScript
 
 - stage: DeployToSITEventGridSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
