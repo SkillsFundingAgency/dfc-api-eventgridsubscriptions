@@ -149,6 +149,9 @@ stages:
         azurePowerShellVersion: LatestVersion
         ScriptType: InlineScript
         Inline: |
+          Remove-AzEventGridSubscription `
+            -ResourceId $topicid `
+            -EventSubscriptionName 'dfc-dead-letter'
           $containername = 'event-grid-dead-letter-events' 
           $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-stax-editor-rg' -Name 'dfc-dev-stax-egt').Id 
           $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
