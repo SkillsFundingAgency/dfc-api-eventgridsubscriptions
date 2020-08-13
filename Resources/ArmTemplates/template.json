@@ -252,7 +252,7 @@
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
-                                "value": "[resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('eventGridSubscriptionStorage'))]"
+                                "value": "[concat(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('eventGridSubscriptionStorage')))]"
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__StaleSubscriptionInterval",
