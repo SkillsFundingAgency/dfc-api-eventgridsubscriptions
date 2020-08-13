@@ -144,8 +144,9 @@ stages:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         Inline: |
-          $ctx = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)").Context
-          $storageid = $ctx.Id
+          $storageAccount = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
+          $ctx = $storageAccount.Context
+          $storageid = $storageAccount.Id
           New-AzStorageContainer -Name "$(DeadLetterBlobContainerName)"  `
             -Context $ctx  `
             -Permission blob  `
