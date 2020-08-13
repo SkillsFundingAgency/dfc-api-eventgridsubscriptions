@@ -148,7 +148,7 @@ stages:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         ScriptType: InlineScript
-        ScriptPath: |
+        Inline: |
           $containername = 'event-grid-dead-letter-events' 
           $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-stax-editor-rg' -Name 'dfc-dev-stax-egt').Id 
           $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
