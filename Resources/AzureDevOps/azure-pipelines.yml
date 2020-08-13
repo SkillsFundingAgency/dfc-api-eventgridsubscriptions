@@ -148,7 +148,10 @@ stages:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         ScriptType: InlineScript
-        ScriptPath: "New-AzEventGridSubscription -ResourceId '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr' -EventSubscriptionName 'dfc-dead-letter' -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates'"
+        ScriptPath: |
+          "Set-AzContext -SubscriptionId '962cae10-2950-412a-93e3-d8ae92b17896'"
+          "New-AzEventGridSubscription -ResourceId '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr' -EventSubscriptionName 'dfc-dead-letter' -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates'"
+
     # - task: AzurePowerShell@4
     #   displayName: 'Create Event Subscription'
     #   inputs:
