@@ -125,59 +125,27 @@ stages:
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
-- stage: DeployEventSubscription
+- stage: DeployDEVSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy Event Subscription
+  displayName: Deploy Event Subscription to DEV
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
   - group: dfc-api-eventgridsubscriptions-dev
   - group: dfc-app-shared-dev
   jobs:
-  - job: DeployEventSub
+  - job: DeployEventSubDEV
     steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'DFC.Api.EventGridSubscriptions.PSScripts'
-        downloadPath: '$(System.ArtifactsDirectory)'
-    - task: PowerShell@2
-      inputs:
-        script: "dir $(Agent.BuildDirectory) -Verbose"
-        targetType: inline
-    - task: PowerShell@2
-      inputs:
-        script: "dir $(Agent.BuildDirectory)/s -Verbose"
-        targetType: inline
-    - task: PowerShell@2
-      inputs:
-        script: "dir $(Agent.BuildDirectory)/DFC.Api.EventGridSubscriptions.PSScripts -Verbose"
-        targetType: inline
-    - task: PowerShell@2
-      inputs:
-        script: "dir $(Agent.BuildDirectory)/s/DFC.Api.EventGridSubscriptions.PSScripts -Verbose"
-        targetType: inline
     - task: AzurePowerShell@4
       displayName: Azure CLI
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         ScriptPath:  '$(Agent.BuildDirectory)/s/PSScripts/Create-Event-Subscription.ps1'
-        ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" -appSharedStorageAccountName "$(appSharedStorageAccountName)" -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)" -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)" -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
-        # Inline: |
-        #   $storageAccount = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
-        #   $ctx = $storageAccount.Context
-        #   $storageid = $storageAccount.Id
-        #   New-AzStorageContainer -Name "$(DeadLetterBlobContainerName)"  `
-        #     -Context $ctx  `
-        #     -Permission blob  `
-        #     -Verbose
-        #   New-AzEventGridSubscription  `
-        #     -ResourceId $storageid `
-        #     -EventSubscriptionName '$(DeadLetterSubscriptionName)'  `
-        #     -Endpoint '$(DeadLetterSubscriptionEndPoint)'  `
-        #     -Verbose
-        # ScriptType: InlineScript
+        ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)"  `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
+          -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)"  `
+          -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)"  `
+          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToSITEventGridSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
@@ -220,3 +188,26 @@ stages:
         -
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
+      
+- stage: DeploySITSubscriptions
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: Deploy Event Subscription to SIT
+  dependsOn: DeployToSITEventGridSubscriptions
+  variables:
+  - group: dfc-api-eventgridsubscriptions-sit
+  - group: dfc-app-shared-sit
+  jobs:
+  - job: DeployEventSubSIT
+    steps:
+    - task: AzurePowerShell@4
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+        azurePowerShellVersion: LatestVersion
+        ScriptPath:  '$(Agent.BuildDirectory)/s/PSScripts/Create-Event-Subscription.ps1'
+        ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)"  `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
+          -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)"  `
+          -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)"  `
+          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
+
