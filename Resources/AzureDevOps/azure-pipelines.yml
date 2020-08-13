@@ -138,8 +138,8 @@ stages:
     - task: DownloadBuildArtifacts@0
       inputs:
         buildType: 'current'
-        downloadType: 'specific'
-        itemPattern: '**' # Set patterns accordingly
+        downloadType: 'single'
+        artifactName: 'DFC.Api.EventGridSubscriptions.PSScripts'
         downloadPath: '$(System.ArtifactsDirectory)'
     - task: AzurePowerShell@4
       displayName: Azure CLI
