@@ -24,7 +24,6 @@ The path to save the openapi specification file to update the APIM instance with
 Import-ApimOpenApiDefinitionFromFile -ApimResourceGroup dfc-foo-bar-rg -InstanceName dfc-foo-bar-apim -ApiName bar -OpenApiSpecificationFile some-file.yaml -Verbose
 
 #>
-[CmdletBinding(DefaultParametersetName='None', SupportsShouldProcess = $true, ConfirmImpact = 'Low')]
 param(
     [Parameter(Mandatory=$true)]
     [string]$appSharedResourceGroupName,
