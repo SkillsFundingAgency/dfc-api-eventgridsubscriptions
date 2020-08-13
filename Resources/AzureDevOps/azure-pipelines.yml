@@ -125,7 +125,7 @@ stages:
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
-- stage: DeployDEVSubscriptions
+- stage: DeployDEVDeadLetter
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   displayName: Deploy Event Subscription to DEV
   dependsOn: DeployToDevEventGridSubscriptions
@@ -133,10 +133,10 @@ stages:
   - group: dfc-api-eventgridsubscriptions-dev
   - group: dfc-app-shared-dev
   jobs:
-  - job: DeployEventSubDEV
+  - job: DeployDEVDeadLetterJob
     steps:
     - task: AzurePowerShell@4
-      displayName: Azure CLI
+      displayName: Deploy DEV Dead Letter Subs
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
@@ -189,7 +189,7 @@ stages:
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
       
-- stage: DeploySITSubscriptions
+- stage: DeploySITDeadLetter
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   displayName: Deploy Event Subscription to SIT
   dependsOn: DeployToSITEventGridSubscriptions
@@ -197,10 +197,10 @@ stages:
   - group: dfc-api-eventgridsubscriptions-sit
   - group: dfc-app-shared-sit
   jobs:
-  - job: DeployEventSubSIT
+  - job: DeploySITDeadLetterJob
     steps:
     - task: AzurePowerShell@4
-      displayName: Azure CLI
+      displayName: Deploy SIT Dead Letter Subs
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
