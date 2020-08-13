@@ -147,23 +147,32 @@ stages:
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
-        ScriptType: InlineScript
         Inline: |
-          New-AzEventGridSubscription -ResourceId '/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr'  -EventSubscriptionName 'dfc-dead-letter' -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' 
-    # - task: AzurePowerShell@4
-    #   displayName: 'Create Event Subscription'
-    #   inputs:
-    #     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
-    #     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Create-Event-Subscription.ps1"
-    #     azurePowerShellVersion: LatestVersion
+          $topicid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
+          New-AzEventGridSubscription  `
+            -ResourceId $topicid `
+            -EventSubscriptionName 'dfc-dead-letter'  `
+            -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' 
+        ScriptType: InlineScript
+
           # containername = 'event-grid-dead-letter-events' 
           # $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-stax-editor-rg' -Name 'dfc-dev-stax-egt').Id 
           # $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
           # Remove-AzEventGridSubscription `
           #   -ResourceId $topicid `
           #   -EventSubscriptionName 'dfc-dead-letter'
-          # New-AzEventGridSubscription -ResourceId $topicid -EventSubscriptionName 'dfc-dead-letter' -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' -DeadLetterEndpoint "$($storageid)/blobServices/default/containers/$($containername)" 
+          # New-AzEventGridSubscription  `
+          #   -ResourceId $topicid `
+          #   -EventSubscriptionName 'dfc-dead-letter' `
+          #   -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' `
+          #   -DeadLetterEndpoint "$($storageid)/blobServices/default/containers/$($containername)" 
 
+    # - task: AzurePowerShell@4
+    #   displayName: 'Create Event Subscription'
+    #   inputs:
+    #     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+    #     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Create-Event-Subscription.ps1"
+    #     azurePowerShellVersion: LatestVersion
 
 - stage: DeployToSITEventGridSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))

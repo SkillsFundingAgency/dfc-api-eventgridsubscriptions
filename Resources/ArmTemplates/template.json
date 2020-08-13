@@ -45,11 +45,17 @@
         },
         "cosmosDbKey": {
             "type": "securestring"
+        },
+        "eventGridSubscriptionStorage": {
+            "type": "string",
+            "metadata": {
+                "description": "event grid subscription storage account"
+            }
         }
     },
     "variables": {
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
-        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",
+        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
@@ -61,6 +67,23 @@
 
     },
     "resources": [
+        {
+            "name": "eventGridSubscriptionStorage",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'),'storage-account.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[parameters('eventGridSubscriptionStorage')]"
+                    }
+                }
+            }
+        },
         {
             "name": "[variables('VersionSetName')]",
             "type": "Microsoft.Resources/deployments",
@@ -229,7 +252,7 @@
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
-                                "value": "/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr"
+                                "value": "[resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('eventGridSubscriptionStorage'))]"
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__StaleSubscriptionInterval",
@@ -244,7 +267,8 @@
                 }
             },
             "dependsOn": [
-                "[variables('AppServiceAppInsightsName')]"
+                "[variables('AppServiceAppInsightsName')]",
+                "eventGridSubscriptionStorage"
             ]
         }
     ],

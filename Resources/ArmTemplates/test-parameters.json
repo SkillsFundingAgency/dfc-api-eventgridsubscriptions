@@ -36,10 +36,13 @@
             "value": "api-name"
         },
         "cosmosDbName": {
-            "value": "__cosmosDbName__"
+            "value": "my-cosmos-name"
         },
         "cosmosDbKey": {
-            "value": "__cosmosDbKey__"
+            "value": "my-cosomos-key"
+        },
+        "eventGridSubscriptionStorage": {
+            "value": "event-grid-sub"
         }
     }
 }

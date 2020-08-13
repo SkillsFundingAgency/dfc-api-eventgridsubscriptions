@@ -40,6 +40,9 @@
         },
         "cosmosDbKey": {
             "value": "__appSharedCosmosPrimaryKey__"
+        },
+        "eventGridSubscriptionStorage": {
+            "value": "__eventGridSubscriptionStorage__"
         }
     }
 }
