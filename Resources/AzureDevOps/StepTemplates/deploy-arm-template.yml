@@ -60,3 +60,4 @@ steps:
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
     ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName $(sharedResourceGroup) -ServicePrincipalName '$(ServicePrincipalName)-fa' -Verbose"
     azurePowerShellVersion: LatestVersion
+

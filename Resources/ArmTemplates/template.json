@@ -39,16 +39,26 @@
         },
         "ApiName": {
             "type": "string"
+        },
+        "cosmosDbName": {
+            "type": "string"
+        },
+        "cosmosDbKey": {
+            "type": "securestring"
         }
     },
     "variables": {
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
-        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",
+        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
         "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
-        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]"
+        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]",
+        "cosmosDbCollectionPartitionKey": "/PartitionKey",
+        "cosmosDbDatabaseName": "dfc-eventstore",
+        "cosmosDbEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]"
+
     },
     "resources": [
         {
@@ -186,6 +196,26 @@
                                 "value": "[parameters('EventGridTopicName')]"
                             },
                             {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__AccessKey",
+                                "value": "[parameters('cosmosDbKey')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__EndpointUrl",
+                                "value": "[variables('cosmosDbEndpoint')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__DatabaseId",
+                                "value": "[variables('cosmosDbDatabaseName')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__CollectionId",
+                                "value": "subscriptions"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__PartitionKey",
+                                "value": "[variables('cosmosDbCollectionPartitionKey')]"
+                            },
+                            {
                                 "name": "EventGridSubscriptionClientOptions__RetryPolicyEventTimeToLiveInMinutes",
                                 "value": "1440"
                             },
@@ -199,7 +229,7 @@
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
-                                "value": "/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-dev-compui-shared-rg/providers/Microsoft.Storage/storageAccounts/dfcdevcompuisharedstr"
+                                "value": "[resourceId(subscription().subscriptionId, parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName'))]"
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__StaleSubscriptionInterval",
