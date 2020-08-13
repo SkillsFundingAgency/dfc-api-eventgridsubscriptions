@@ -42,7 +42,7 @@
             "value": "my-cosomos-key"
         },
         "eventGridSubscriptionStorage": {
-            "value": "event-grid-sub"
+            "value": "dfcdeveventgridstr"
         }
     }
 }
