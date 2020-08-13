@@ -162,7 +162,7 @@ stages:
       inputs:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
-        ScriptPath:  '$(Agent.BuildDirectory)/s/DFC.Api.EventGridSubscriptions.PSScripts/Create-Event-Subscription.ps1'
+        ScriptPath:  '$(Agent.BuildDirectory)/s/PSScripts/Create-Event-Subscription.ps1'
         ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" -appSharedStorageAccountName "$(appSharedStorageAccountName)" -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)" -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)" -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
         # Inline: |
         #   $storageAccount = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
