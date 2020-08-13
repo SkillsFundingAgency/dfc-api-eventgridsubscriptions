@@ -145,14 +145,20 @@ stages:
     - task: AzurePowerShell@4
       displayName: Azure CLI
       inputs:
-        azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+        azureSubscription: '$(AzureSubscription)'
         azurePowerShellVersion: LatestVersion
         Inline: |
-          $storageid = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)").Id
+          $ctx = (Get-AzStorageAccount -ResourceGroupName "$(appSharedResourceGroup)" -Name "$(appSharedStorageAccountName)")
+          $storageid = $ctx.Id
+          New-AzStorageContainer -Name $(DeadLetterBlobContainerName)  `
+            -Context $ctx  `
+            -Permission blob  `
+            -Verbose
           New-AzEventGridSubscription  `
             -ResourceId $storageid `
             -EventSubscriptionName '$(DeadLetterSubscriptionName)'  `
-            -Endpoint '$(DeadLetterSubscriptionEndPoint)' 
+            -Endpoint '$(DeadLetterSubscriptionEndPoint)'  `
+            -Verbose
         ScriptType: InlineScript
 
           # containername = 'event-grid-dead-letter-events' 
