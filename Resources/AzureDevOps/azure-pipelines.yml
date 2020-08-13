@@ -148,16 +148,16 @@ stages:
         azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
         azurePowerShellVersion: LatestVersion
         Inline: |
-          $topicid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
+          $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-app-sharedresources-rg' -Name 'dfcdevappsharedstr').Id
           New-AzEventGridSubscription  `
-            -ResourceId $topicid `
-            -EventSubscriptionName 'dfc-dead-letter'  `
+            -ResourceId $storageid `
+            -EventSubscriptionName 'dfc-dev-dead-letter'  `
             -Endpoint 'https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net/api/DeadLetter/api/updates' 
         ScriptType: InlineScript
 
           # containername = 'event-grid-dead-letter-events' 
-          # $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-stax-editor-rg' -Name 'dfc-dev-stax-egt').Id 
-          # $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-compui-shared-rg' -Name 'dfcdevcompuisharedstr').Id 
+          # $topicid = (Get-AzEventGridTopic -ResourceGroupName 'dfc-dev-app-sharedresources-rg' -Name 'dfc-dev-stax-egt').Id 
+          # $storageid = (Get-AzStorageAccount -ResourceGroupName 'dfc-dev-app-sharedresources-rg' -Name 'dfcdevappsharedstr').Id 
           # Remove-AzEventGridSubscription `
           #   -ResourceId $topicid `
           #   -EventSubscriptionName 'dfc-dead-letter'
