@@ -45,12 +45,6 @@
         },
         "cosmosDbKey": {
             "type": "securestring"
-        },
-        "eventGridSubscriptionStorage": {
-            "type": "string",
-            "metadata": {
-                "description": "event grid subscription storage account"
-            }
         }
     },
     "variables": {
@@ -67,23 +61,6 @@
 
     },
     "resources": [
-        {
-            "name": "eventGridSubscriptionStorage",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'),'storage-account.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[parameters('eventGridSubscriptionStorage')]"
-                    }
-                }
-            }
-        },
         {
             "name": "[variables('VersionSetName')]",
             "type": "Microsoft.Resources/deployments",
@@ -252,7 +229,7 @@
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
-                                "value": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('eventGridSubscriptionStorage'))]"
+                                "value": "[resourceId(subscription().subscriptionId, parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName'))]"
                             },
                             {
                                 "name": "EventGridSubscriptionClientOptions__StaleSubscriptionInterval",
@@ -267,8 +244,7 @@
                 }
             },
             "dependsOn": [
-                "[variables('AppServiceAppInsightsName')]",
-                "[ parameters('eventGridSubscriptionStorage')]"
+                "[variables('AppServiceAppInsightsName')]"
             ]
         }
     ],

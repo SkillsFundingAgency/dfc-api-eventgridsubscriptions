@@ -40,9 +40,6 @@
         },
         "cosmosDbKey": {
             "value": "my-cosomos-key"
-        },
-        "eventGridSubscriptionStorage": {
-            "value": "dfcdevappsharedstr"
         }
     }
 }

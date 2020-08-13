@@ -27,8 +27,6 @@ pr:
 
 stages:
 - stage: Build
-  variables:
-  - group: dfc-api-eventgridsubscriptions-dev
   jobs:
 
   - job: BuildArmTemplates
