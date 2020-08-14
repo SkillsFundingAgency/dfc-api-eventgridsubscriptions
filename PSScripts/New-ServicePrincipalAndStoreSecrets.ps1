@@ -30,6 +30,10 @@ The Service Principal that the connection authenticates with will need the follo
 [CmdletBinding(DefaultParametersetName='None', SupportsShouldProcess = $true, ConfirmImpact = 'Low')]
 param(
     [Parameter(Mandatory=$true)]
+    [string]$appSharedResourceGroupName,
+    [Parameter(Mandatory=$true)]
+    [string]$appSharedStorageAccountName,
+    [Parameter(Mandatory=$true)]
     [string]$ServicePrincipalName,
     [Parameter(Mandatory=$true)]
     [string]$RepoName,
@@ -108,8 +112,20 @@ if(!$AdServicePrincipal) {
     $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
     $Secret3.Id
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId -ResourceType "Microsoft.EventGrid/topics" -ResourceName $EventGridTopicName -ResourceGroupName $EventGridResourceGroup -RoleDefinitionName "Owner"
+
+    $storageAccount = (Get-AzStorageAccount  `
+      -ResourceGroupName $appSharedResourceGroupName  `
+      -Name $appSharedStorageAccountName)
+    $storageid = $storageAccount.Id
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Storage Blob Data Contributor" `
+        -Scope $storageid -Verbose
+
 }
 else {
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
+
+    
+
 }
 $AdServicePrincipal
