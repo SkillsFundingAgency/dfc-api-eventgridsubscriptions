@@ -112,13 +112,7 @@ if(!$AdServicePrincipal) {
     $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
     $Secret3.Id
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId -ResourceType "Microsoft.EventGrid/topics" -ResourceName $EventGridTopicName -ResourceGroupName $EventGridResourceGroup -RoleDefinitionName "Owner"
-    
-}
-else {
-    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
-    # $appSharedResourceGroupName = "dfc-dev-app-sharedresources-rg"
-    # appSharedStorageAccountName = "dfcdevappsharedstr"
     $storageAccount = (Get-AzStorageAccount  `
       -ResourceGroupName $appSharedResourceGroupName  `
       -Name $appSharedStorageAccountName)
@@ -126,5 +120,12 @@ else {
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
         -RoleDefinitionName "Storage Blob Data Contributor" `
         -Scope $storageid -Verbose
+
+}
+else {
+    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
+
+    
+
 }
 $AdServicePrincipal
