@@ -50,7 +50,14 @@ steps:
   inputs:
     azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1"
-    ScriptArguments: "-ServicePrincipalName $(ServicePrincipalName) -RepoName dfc-api-eventgridsubscriptions -KeyVaultName $(sharedKeyVaultName) -TenantId $(Authentication_Tenant) -EventGridResourceGroup $(EventGridResourceGroup) -EventGridTopicName $(EventGridTopicName) -Verbose"
+    ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
+          -ServicePrincipalName "$(ServicePrincipalName)"  `
+          -RepoName dfc-api-eventgridsubscriptions  `
+          -KeyVaultName "$(sharedKeyVaultName)"  `
+          -TenantId "$(Authentication_Tenant)"  `
+          -EventGridResourceGroup "$(EventGridResourceGroup)"  `
+          -EventGridTopicName "$(EventGridTopicName)" -Verbose
     azurePowerShellVersion: LatestVersion
 
 - task: AzurePowerShell@5
