@@ -125,6 +125,9 @@ if(!$AdServicePrincipal) {
 else {
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Contributor" `
+        -Scope $storageid -Verbose
     
 
 }
