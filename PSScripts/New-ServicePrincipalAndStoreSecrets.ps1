@@ -113,11 +113,6 @@ if(!$AdServicePrincipal) {
     $Secret3.Id
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId -ResourceType "Microsoft.EventGrid/topics" -ResourceName $EventGridTopicName -ResourceGroupName $EventGridResourceGroup -RoleDefinitionName "Owner"
 
-
-}
-else {
-    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
-
     $storageAccount = (Get-AzStorageAccount  `
       -ResourceGroupName $appSharedResourceGroupName  `
       -Name $appSharedStorageAccountName)
@@ -129,6 +124,9 @@ else {
         -RoleDefinitionName "Contributor" `
         -Scope $storageid -Verbose
     
+}
+else {
+    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
 }
 $AdServicePrincipal
