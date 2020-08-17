@@ -120,12 +120,13 @@ if(!$AdServicePrincipal) {
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
         -RoleDefinitionName "Storage Blob Data Contributor" `
         -Scope $storageid -Verbose
-
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Contributor" `
+        -Scope $storageid -Verbose
+    
 }
 else {
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
-
-    
 
 }
 $AdServicePrincipal
