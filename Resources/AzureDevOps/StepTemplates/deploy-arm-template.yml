@@ -48,7 +48,7 @@ steps:
 - task: AzurePowerShell@5
   displayName: 'Azure PowerShell script: Creation of Service Principal'
   inputs:
-    azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+    azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1"
     ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" `
           -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
@@ -63,7 +63,7 @@ steps:
 - task: AzurePowerShell@5
   displayName: 'Azure PowerShell script: Keyvault permissions'
   inputs:
-    azureSubscription: 'SFA-CDH-Dev/Test (962cae10-2950-412a-93e3-d8ae92b17896)'
+    azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
     ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName $(sharedResourceGroup) -ServicePrincipalName '$(ServicePrincipalName)-fa' -Verbose"
     azurePowerShellVersion: LatestVersion
