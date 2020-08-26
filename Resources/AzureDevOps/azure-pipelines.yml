@@ -84,7 +84,7 @@ stages:
         DotNetCoreVersion: '3.1.100'
 
 # - stage: DeployToDevEventGridSubscriptions
-#   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+#   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
 #   displayName: Deploy to DEV_EventGridSubscriptions
 #   variables:
 #   - group: dfc-shared-all
@@ -126,7 +126,7 @@ stages:
 #             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 # - stage: DeployDEVDeadLetter
-#   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+#   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
 #   displayName: Deploy Event Subscription to DEV
 #   dependsOn: DeployToDevEventGridSubscriptions
 #   variables:
@@ -148,7 +148,7 @@ stages:
 #           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 # - stage: DeployToSITEventGridSubscriptions
-#   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+#   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
 #   displayName: Deploy to SIT_EventGridSubscriptions
 #   variables:
 #   - group: dfc-shared-all
@@ -190,7 +190,7 @@ stages:
 #             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
       
 # - stage: DeploySITDeadLetter
-#   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+#   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
 #   displayName: Deploy Event Subscription to SIT
 #   dependsOn: DeployToSITEventGridSubscriptions
 #   variables:
@@ -212,7 +212,7 @@ stages:
 #           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToPPEventGridSubscriptions
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
   displayName: Deploy to PP_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -254,7 +254,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
                 
 - stage: DeployPPDeadLetter
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
   displayName: Deploy Event Subscription to PP
   dependsOn: DeployToPPEventGridSubscriptions
   variables:
