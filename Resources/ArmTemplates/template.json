@@ -321,6 +321,7 @@
                 }
             },
             "dependsOn": [
+                "[variables('appServicePlanName')]",
                 "[variables('AppServiceAppInsightsName')]"
             ]
         }
