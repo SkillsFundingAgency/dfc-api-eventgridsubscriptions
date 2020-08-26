@@ -85,7 +85,7 @@ stages:
 
 - stage: DeployToDevEventGridSubscriptions
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy to DEV_EventGridSubscriptions
+  displayName: Deploy environment to DEV_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
   - group: dfc-api-eventgridsubscriptions-dev
@@ -127,7 +127,7 @@ stages:
 
 - stage: DeployDEVDeadLetter
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy Event Subscription to DEV
+  displayName: Deploy dead letter subscription to DEV_EventGridSubscriptions
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
   - group: dfc-api-eventgridsubscriptions-dev
@@ -149,7 +149,7 @@ stages:
 
 - stage: DeployToSITEventGridSubscriptions
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy to SIT_EventGridSubscriptions
+  displayName: Deploy environment to SIT_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
   - group: dfc-api-eventgridsubscriptions-sit
@@ -191,7 +191,7 @@ stages:
       
 - stage: DeploySITDeadLetter
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy Event Subscription to SIT
+  displayName: Deploy dead letter subscription to SIT_EventGridSubscriptions
   dependsOn: DeployToSITEventGridSubscriptions
   variables:
   - group: dfc-api-eventgridsubscriptions-sit
@@ -213,7 +213,7 @@ stages:
 
 - stage: DeployToPPEventGridSubscriptions
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy to PP_EventGridSubscriptions
+  displayName: Deploy environment to PP_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
   - group: dfc-api-eventgridsubscriptions-pp
@@ -255,7 +255,7 @@ stages:
                 
 - stage: DeployPPDeadLetter
   condition: and(eq(dependencies.Build.result,'Succeeded'), ne(variables['Build.Reason'], 'PullRequest'))
-  displayName: Deploy Event Subscription to PP
+  displayName: Deploy dead letter subscription to PP_EventGridSubscriptions
   dependsOn: DeployToPPEventGridSubscriptions
   variables:
   - group: dfc-api-eventgridsubscriptions-pp
