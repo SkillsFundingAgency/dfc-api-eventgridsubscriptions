@@ -1,3 +1,9 @@
 variables:
 - name: ReleaseEnvironmentName
   value: DEV
+- name: aspTier
+  value: Standard
+- name: aspInstances
+  value: 2
+- name: aspSize
+  value: 2

@@ -2,20 +2,35 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "appSharedResourceGroup": {
-            "value": "dfc-dev-app-sharedresources-rg"
-        },
         "Environment": {
             "value": "dev"
+        },
+        "appSharedResourceGroup": {
+            "value": "dfc-dev-app-sharedresources-rg"
         },
         "appSharedStorageAccountName": {
             "value": "dfcdevappsharedstr"
         },
-        "SharedAppServicePlanName": {
+        "sharedAppServicePlanName": {
             "value": "dfc-dev-app-shared-asp"
         },
-        "SharedAppServicePlanResourceGroup": {
+        "sharedAppServicePlanResourceGroup": {
             "value": "dfc-dev-app-sharedresources-rg"
+        },
+        "aspInstances": {
+            "value": 1
+        },
+        "aspTier": {
+            "value": "Standard"
+        },
+        "aspSize": {
+            "value": "2"
+        },
+        "aseHostingEnvironmentName": {
+            "value": "__AseServiceName__"
+        },
+        "aseResourceGroup": {
+            "value": "__aseResourceGroup__"
         },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"

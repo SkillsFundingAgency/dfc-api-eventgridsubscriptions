@@ -2,22 +2,37 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "Environment": {
+            "type": "string"
+        },
         "appSharedResourceGroup": {
             "type": "string"
         },
-        "Environment": {
-            "type": "string"
+        "sharedAppServicePlanName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "sharedAppServicePlanResourceGroup": {
+            "type": "string",
+            "defaultValue": ""
         },
         "appSharedStorageAccountName": {
             "type": "string"
         },
-        "SharedAppServicePlanName": {
-            "type": "string",
-            "defaultValue": ""
+        "aspInstances": {
+            "type": "int"
         },
-        "SharedAppServicePlanResourceGroup": {
-            "type": "string",
-            "defaultValue": ""
+        "aspTier": {
+            "type": "string"
+        },
+        "aspSize": {
+            "type": "string"
+        },
+        "aseHostingEnvironmentName": {
+            "type": "string"
+        },
+        "aseResourceGroup": {
+            "type": "string"
         },
         "SharedKeyVaultName": {
             "type": "string",
@@ -48,11 +63,11 @@
         }
     },
     "variables": {
+        "appServicePlanName": "[concat(variables('resourcePrefix'), '-asp')]",
+        "appServicePlanResourceGroup": "[concat(variables('resourcePrefix'),'-rg')]",
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
         "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
-        "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
-        "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
         "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]",
         "cosmosDbCollectionPartitionKey": "/PartitionKey",
@@ -140,6 +155,38 @@
         },
         {
             "apiVersion": "2017-05-10",
+            "name": "[variables('appServicePlanName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('buildingBlocksDfcBaseUrl'), 'app-service-plan.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServicePlanName": {
+                        "value": "[variables('appServicePlanName')]"
+                    },
+                    "aseHostingEnvironmentName": {
+                        "value": "[parameters('aseHostingEnvironmentName')]"
+                    },
+                    "aseResourceGroup": {
+                        "value": "[parameters('aseResourceGroup')]"
+                    },
+                    "aspSize": {
+                        "value": "[parameters('aspSize')]"
+                    },
+                    "aspInstances": {
+                        "value": "[parameters('aspInstances')]"
+                    },
+                    "nonASETier": {
+                        "value": "[parameters('aspTier')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
             "name": "[variables('FunctionAppName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -150,13 +197,13 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('FunctionAppName')]"
+                        "value": "[variables('functionAppName')]"
                     },
                     "appServicePlanName": {
-                        "value": "[variables('AppServicePlanName')]"
+                        "value": "[variables('appServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[variables('AppServicePlanResourceGroup')]"
+                        "value": "[variables('appServicePlanResourceGroup')]"
                     },
                     "appServiceType": {
                         "value": "functionapp"

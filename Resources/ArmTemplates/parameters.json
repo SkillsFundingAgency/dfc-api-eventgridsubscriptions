@@ -2,20 +2,35 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "appSharedResourceGroup": {
-            "value": "__appSharedResourceGroup__"
-        },
         "Environment": {
             "value": "__ReleaseEnvironmentName__"
+        },
+        "appSharedResourceGroup": {
+            "value": "__appSharedResourceGroup__"
         },
         "appSharedStorageAccountName": {
             "value": "__appSharedStorageAccountName__"
         },
-        "SharedAppServicePlanName": {
+        "sharedAppServicePlanName": {
             "value": "__sharedAppServicePlanName__"
         },
-        "SharedAppServicePlanResourceGroup": {
+        "sharedAppServicePlanResourceGroup": {
             "value": "__appSharedResourceGroup__"
+        },
+        "aseHostingEnvironmentName": {
+            "value": "__AseServiceName__"
+        },
+        "aseResourceGroup": {
+            "value": "__aseResourceGroup__"
+        },
+        "aspInstances": {
+            "value": __aspInstances__
+        },
+        "aspTier": {
+            "value": "__aspTier__"
+        },
+        "aspSize": {
+            "value": "__aspSize__"
         },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
