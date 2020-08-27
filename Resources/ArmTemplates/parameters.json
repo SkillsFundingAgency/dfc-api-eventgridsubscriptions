@@ -18,7 +18,7 @@
             "value": "__appSharedResourceGroup__"
         },
         "aseHostingEnvironmentName": {
-            "value": "__AseServiceName__"
+            "value": ""
         },
         "aseResourceGroup": {
             "value": "__sharedResourceGroup__"
