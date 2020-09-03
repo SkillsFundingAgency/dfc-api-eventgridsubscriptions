@@ -41,15 +41,6 @@
         "EventGridTopicName": {
             "value": "Event-Grid-Topic-Name"
         },
-        "ApimResourceGroup": {
-            "value": "dfc-test-template-rg"
-        },
-        "ApimServiceName": {
-            "value": "an-apim-instance"
-        },
-        "ApiName": {
-            "value": "api-name"
-        },
         "cosmosDbName": {
             "value": "my-cosmos-name"
         },

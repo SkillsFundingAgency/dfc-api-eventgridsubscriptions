@@ -41,15 +41,6 @@
         "EventGridTopicName": {
             "value": "__eventGridTopicName__"
         },
-        "ApimResourceGroup": {
-            "value": "__SharedResourceGroupName__"
-        },
-        "ApimServiceName": {
-            "value": "__ApimServiceName__"
-        },
-        "ApiName": {
-            "value": "__ApiName__"
-        },
         "cosmosDbName": {
             "value": "__appSharedCosmosDBName__"
         },

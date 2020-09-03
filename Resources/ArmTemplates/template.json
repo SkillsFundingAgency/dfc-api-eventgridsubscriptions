@@ -46,15 +46,6 @@
             "type": "string",
             "defaultValue": ""
         },
-        "ApimResourceGroup": {
-            "type": "string"
-        },
-        "ApimServiceName": {
-            "type": "string"
-        },
-        "ApiName": {
-            "type": "string"
-        },
         "cosmosDbName": {
             "type": "string"
         },
@@ -69,7 +60,6 @@
         "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
-        "VersionSetName": "[concat(toLower(parameters('ApiName')), '-versionset')]",
         "cosmosDbCollectionPartitionKey": "/PartitionKey",
         "cosmosDbDatabaseName": "dfc-eventstore",
         "cosmosDbEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]"
@@ -102,33 +92,6 @@
                     },
                     "partitionKey": {
                         "value": "[variables('cosmosDbCollectionPartitionKey')]"
-                    }
-                }
-            }
-        },        
-        {
-            "name": "[variables('VersionSetName')]",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('ApimResourceGroup')]",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'APIM/apim-versionset.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "apimServiceName": {
-                        "value": "[parameters('ApimServiceName')]"
-                    },
-                    "apiName": {
-                        "value": "[parameters('ApiName')]"
-                    },
-                    "versioningMethod": {
-                        "value": "Header"
-                    },
-                    "versionProperty": {
-                        "value": "version"
                     }
                 }
             }

@@ -53,18 +53,6 @@ stages:
         targetPath: $(Build.ArtifactStagingDirectory)/Resources/PSScripts
         artifactName: DFC.Api.EventGridSubscriptions.PSScripts
 
-    - task: PublishPipelineArtifact@1
-      displayName: Publish OpenAPI docs to Pipeline Artifact
-      inputs:
-        targetPath: "$(System.DefaultWorkingDirectory)/DFC.EventGridSubscriptions.ApiFunction/OpenAPIDocs"
-        artifactName: DFC.Api.EventGridSubscriptions.Resources.OpenAPIDocs
-
-    - task: PublishPipelineArtifact@1
-      displayName: Publish API import script to Pipeline Artifact
-      inputs:
-        targetPath: "$(System.DefaultWorkingDirectory)/Resources/Scripts"
-        artifactName: DFC.Api.EventGridSubscriptions.Resources.Scripts
-
   #Build and test the application
   - job: BuildTestAndAnalyze
     displayName: "Build and test application"
@@ -105,14 +93,7 @@ stages:
       ServiceOffering: '$(ServiceOffering)'
       ResourceGroup: 'dfc-dev-api-eventgridsubscriptions-rg'
       PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
-      ApimProductId: "$(ApimProductId)"
-      ApimLoggerName: "$(ApimLoggerName)"
-      APIProductInstanceName: "$(ApimProductInstanceName)"
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
-      ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
-      SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
-      SharedResourceGroup: "$(SharedResourceGroup)"
-      ApimServiceName: "$(ApimServiceName)"
       FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-dev-api-eventgridsubscriptions-fa'
       EnvironmentName: DEV_EventGridSubscriptions
@@ -169,14 +150,7 @@ stages:
       ServiceOffering: '$(ServiceOffering)'
       ResourceGroup: 'dfc-sit-api-eventgridsubscriptions-rg'
       PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
-      ApimProductId: "$(ApimProductId)"
-      ApimLoggerName: "$(ApimLoggerName)"
-      APIProductInstanceName: "$(ApimProductInstanceName)"
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
-      ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
-      SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
-      SharedResourceGroup: "$(SharedResourceGroup)"
-      ApimServiceName: "$(ApimServiceName)"
       FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-sit-api-eventgridsubscriptions-fa'
       EnvironmentName: SIT_EventGridSubscriptions
@@ -233,14 +207,7 @@ stages:
       ServiceOffering: '$(ServiceOffering)'
       ResourceGroup: 'dfc-pp-api-eventgridsubscriptions-rg'
       PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
-      ApimProductId: "$(ApimProductId)"
-      ApimLoggerName: "$(ApimLoggerName)"
-      APIProductInstanceName: "$(ApimProductInstanceName)"
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
-      ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
-      SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
-      SharedResourceGroup: "$(SharedResourceGroup)"
-      ApimServiceName: "$(ApimServiceName)"
       FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-pp-api-eventgridsubscriptions-fa'
       EnvironmentName: PP_EventGridSubscriptions
