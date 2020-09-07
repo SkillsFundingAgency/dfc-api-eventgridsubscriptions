@@ -15,5 +15,6 @@ namespace DFC.EventGridSubscriptions.Data
         public int? RetryPolicyMaxDeliveryAttempts { get; set; }
         public TimeSpan? StaleSubscriptionInterval { get; set; }
         public int StaleSubscriptionThreshold { get; set; }
+        public bool DeadLetterStaleSubscriptionRemovalEnabled { get; set; }
     }
 }

@@ -267,6 +267,10 @@
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobContainerName",
                                 "value": "event-grid-dead-letter-events"
                             },
+							{
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterStaleSubscriptionRemovalEnabled",
+                                "value": "false"
+                            },
                             {
                                 "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
                                 "value": "[resourceId(subscription().subscriptionId, parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName'))]"
