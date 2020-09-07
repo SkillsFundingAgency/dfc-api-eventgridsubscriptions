@@ -92,8 +92,13 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
                         log.LogError($"Dead Lettered Event, Blob URL: {eventData.Url}, SubscriberName {subscriberName}");
 
-                        var result = await subscriptionService.StaleSubscription(subscriberName).ConfigureAwait(false);
-                        return new HttpResponseMessage(result);
+                        if (options.CurrentValue.DeadLetterStaleSubscriptionRemovalEnabled)
+                        {
+                            var result = await subscriptionService.StaleSubscription(subscriberName).ConfigureAwait(false);
+                            return new HttpResponseMessage(result);
+                        }
+
+                        return new HttpResponseMessage(HttpStatusCode.OK);
                     }
                 }
             }
