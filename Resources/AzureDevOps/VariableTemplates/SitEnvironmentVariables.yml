@@ -7,3 +7,5 @@ variables:
   value: 2
 - name: aspSize
   value: 2
+- name: FunctionAppUrl
+  value: https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net

@@ -4,6 +4,15 @@ parameters:
   ResourceGroup: ''
   FunctionAppDomain: ''
   PackageFile: ''
+  FunctionType: ''
+  SharedResourceGroup: ''
+  ApimServiceName: ''
+  ApimImportScript: ''
+  ApimProductId: ''
+  ApimLoggerName: ''
+  SpecificationPath: ''
+  PSScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSScripts'
+  APIMPolicyPath: ''
 
 steps:
 - checkout: dfc-devops
@@ -31,3 +40,63 @@ steps:
 - powershell: |
     Write-Host "##vso[task.setvariable variable=FunctionAppUrl]https://${{ parameters.WebAppName }}.${{ parameters.FunctionAppDomain }}"
   displayName: "Set full hostname as variable"
+
+- task: esfadevops.Tokenization.custom-build-task.Tokenization@0
+  displayName: 'Tokenization: Transform file ${{ parameters.FunctionType }}OpenApi.txt'
+  inputs:
+    SourcePath: '${{ parameters.SpecificationPath }}'
+    TargetFileNames: '${{ parameters.FunctionType }}OpenApi.txt'
+
+- task: AzurePowerShell@4
+  displayName: 'Import OpenAPI specification'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: '${{ parameters.ApimImportScript }}'
+    ScriptArguments: "-ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -InstanceName '${{ parameters.ApimServiceName }}' -ApiName '${{ parameters.FunctionType }}' -OpenApiSpecificationFile '${{ parameters.SpecificationPath }}/${{ parameters.FunctionType }}OpenApi.txt' -ApiPath 'content/${{ parameters.FunctionType }}'"
+    azurePowerShellVersion: LatestVersion
+
+- task: AzurePowerShell@4
+  displayName: 'Set-ApimProductAndLogger'
+  condition: ne( '${{ parameters.ApimLoggerName }}', '')
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: '${{ parameters.PSScriptPath }}/Set-ApimProductAndLogger.ps1'
+    ScriptArguments: '-ApimResourceGroup ${{ parameters.SharedResourceGroup }} -InstanceName ${{ parameters.ApimServiceName }} -ApiId ${{ parameters.FunctionType }} -ApiProductId ${{ parameters.ApimProductId }} -ApimLoggerName ${{ parameters.ApimLoggerName }}'
+    azurePowerShellVersion: LatestVersion
+
+- task: esfadevops.Tokenization.custom-build-task.Tokenization@0
+  displayName: 'Tokenization: Transform file APIM Policy File'
+  inputs:
+    SourcePath: '${{ parameters.APIMPolicyPath }}'
+    TargetFileNames: 'ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml'
+
+# - task: AzurePowerShell@5
+#   displayName: 'Apply EventGrid APIM Policy'
+#   inputs:
+#     azureSubscription: '${{ parameters.AzureSubscription }}'
+#     ScriptType: InlineScript
+#     Inline: |
+#       $context = New-AzApiManagementContext -ResourceGroupName "$(SharedResourceGroupName)" -ServiceName "$(ApimServiceName)"
+      
+#       $policyFilePath = "$(System.DefaultWorkingDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
+      
+#       $apiNames = 'tbc'
+      
+#       $apiOperationNames = 'tbc'
+      
+#       foreach ($apiName in $apiNames) {
+#           $api = ""
+      
+#           $api = Get-AzApiManagementApi -Context $Context -Name $apiName
+      
+#           foreach ($apiOperationName in $apiOperationNames) {
+#               $operation = ""
+      
+#               $operation = Get-AzApiManagementOperation -Context $Context -ApiId $api.ApiId | where {$_.Name -eq $apiOperationName}
+      
+#               Write-Output "Applying policy to API: $($api.name) Operation: $($operation.name)"
+      
+#               Set-AzApiManagementPolicy -Context $Context -Format application/vnd.ms-azure-apim.policy.raw+xml -ApiId $api.ApiId -OperationId $operation.OperationId -PolicyFilePath $PolicyFilePath -Verbose
+#           }
+#       }
+#     azurePowerShellVersion: LatestVersion 

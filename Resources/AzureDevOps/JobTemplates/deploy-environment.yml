@@ -13,6 +13,13 @@ parameters:
   EnvironmentName: ''
   DFCAzureDevOpsProjectGuid: ''
   DfcContentTestsBuildId: ''
+  ApimProductId: ''
+  ApimLoggerName: ''
+  ApimImportScript: ''
+  SpecificationPath: ''
+  SharedResourceGroup: ''
+  ApimServiceName: ''
+  APIMPolicyPath: ''
   # The 'Apis' parameter is a bit special here - it requires a structured, complex parameter:  an array of arrays of objects
   # Below is a simple example of what it expects:
   # - 
@@ -66,3 +73,11 @@ jobs:
                 FunctionAppDomain: '${{ parameters.FunctionAppDomain }}'
                 PackageFile: '${{ parameters.PackageFile }}'
                 ResourceGroup: '${{ parameters.ResourceGroup }}'
+                FunctionType: '${{ api.name }}'
+                SharedResourceGroup: '${{ parameters.SharedResourceGroup }}'
+                ApimServiceName: '${{ parameters.ApimServiceName }}'
+                ApimImportScript: '${{ parameters.ApimImportScript }}'
+                SpecificationPath:  '${{ parameters.SpecificationPath }}'
+                ApimProductId: '${{ parameters.ApimProductId }}'
+                ApimLoggerName: '${{ parameters.ApimLoggerName }}'
+                APIMPolicyPath: '${{ parameters.APIMPolicyPath }}'

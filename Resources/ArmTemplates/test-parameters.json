@@ -11,12 +11,6 @@
         "appSharedStorageAccountName": {
             "value": "dfcdevappsharedstr"
         },
-        "sharedAppServicePlanName": {
-            "value": "dfc-dev-app-shared-asp"
-        },
-        "sharedAppServicePlanResourceGroup": {
-            "value": "dfc-dev-app-sharedresources-rg"
-        },
         "aspInstances": {
             "value": 1
         },
@@ -46,6 +40,15 @@
         },
         "cosmosDbKey": {
             "value": "my-cosomos-key"
+        },
+        "ApimResourceGroup": {
+            "value": "dfc-test-template-rg"
+        },
+        "ApimServiceName": {
+            "value": "an-apim-instance"
+        },
+        "ApiName": {
+            "value": "api-name"
         }
     }
 }

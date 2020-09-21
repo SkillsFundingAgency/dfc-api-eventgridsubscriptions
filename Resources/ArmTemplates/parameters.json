@@ -11,12 +11,6 @@
         "appSharedStorageAccountName": {
             "value": "__appSharedStorageAccountName__"
         },
-        "sharedAppServicePlanName": {
-            "value": "__sharedAppServicePlanName__"
-        },
-        "sharedAppServicePlanResourceGroup": {
-            "value": "__appSharedResourceGroup__"
-        },
         "aseHostingEnvironmentName": {
             "value": "__AseServiceName__"
         },
@@ -46,6 +40,15 @@
         },
         "cosmosDbKey": {
             "value": "__appSharedCosmosPrimaryKey__"
+        },
+        "ApimResourceGroup": {
+            "value": "__SharedResourceGroupName__"
+        },
+        "ApimServiceName": {
+            "value": "__ApimServiceName__"
+        },
+        "ApiName": {
+            "value": "__ApiName__"
         }
     }
 }
