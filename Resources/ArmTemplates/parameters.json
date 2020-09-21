@@ -49,6 +49,12 @@
         },
         "ApiName": {
             "value": "__ApiName__"
+        },
+        "ApimLoggerName": {
+            "value": "__ApimLoggerName__"
+        },
+        "ApimProductInstanceName": {
+            "value": "__ApimProductInstanceName__"
         }
     }
 }

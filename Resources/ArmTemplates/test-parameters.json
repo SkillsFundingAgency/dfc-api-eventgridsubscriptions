@@ -49,6 +49,12 @@
         },
         "ApiName": {
             "value": "api-name"
+        },
+        "ApimLoggerName": {
+            "value": "composite-ui-logger"
+        },
+        "ApimProductInstanceName": {
+            "value": "composite-ui"
         }
     }
 }
