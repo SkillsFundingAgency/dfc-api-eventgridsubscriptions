@@ -8,10 +8,7 @@ parameters:
   SharedResourceGroup: ''
   ApimServiceName: ''
   ApimImportScript: ''
-  ApimProductId: ''
-  ApimLoggerName: ''
   SpecificationPath: ''
-  PSScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSScripts'
   APIMPolicyPath: ''
 
 steps:
@@ -53,15 +50,6 @@ steps:
     azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: '${{ parameters.ApimImportScript }}'
     ScriptArguments: "-ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -InstanceName '${{ parameters.ApimServiceName }}' -ApiName '${{ parameters.FunctionType }}' -OpenApiSpecificationFile '${{ parameters.SpecificationPath }}/${{ parameters.FunctionType }}OpenApi.txt' -ApiPath 'content/${{ parameters.FunctionType }}'"
-    azurePowerShellVersion: LatestVersion
-
-- task: AzurePowerShell@4
-  displayName: 'Set-ApimProductAndLogger'
-  condition: ne( '${{ parameters.ApimLoggerName }}', '')
-  inputs:
-    azureSubscription: '${{ parameters.AzureSubscription }}'
-    ScriptPath: '${{ parameters.PSScriptPath }}/Set-ApimProductAndLogger.ps1'
-    ScriptArguments: '-ApimResourceGroup ${{ parameters.SharedResourceGroup }} -InstanceName ${{ parameters.ApimServiceName }} -ApiId ${{ parameters.FunctionType }} -ApiProductId ${{ parameters.ApimProductId }} -ApimLoggerName ${{ parameters.ApimLoggerName }}'
     azurePowerShellVersion: LatestVersion
 
 - task: esfadevops.Tokenization.custom-build-task.Tokenization@0
