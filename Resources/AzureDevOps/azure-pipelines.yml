@@ -283,3 +283,68 @@ stages:
           -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)"  `
           -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)"  `
           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
+
+- stage: DeployToPRDEventGridSubscriptions
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: Deploy environment to PRD_EventGridSubscriptions
+  variables:
+  - group: dfc-shared-all
+  - group: dfc-api-eventgridsubscriptions-prd
+  - group: dfc-shared-prd
+  - group: dfc-app-shared-all
+  - group: dfc-app-shared-prd
+  - group: dfc-compositeui-all
+  - template: VariableTemplates\PRDEnvironmentVariables.yml
+  - name: WebAppPrefix
+    value: dfc-prd
+  jobs:
+  - template: JobTemplates/deploy-environment.yml
+    parameters:
+      AzureSubscription: 'SFA-DIG-Prod (6c93f7dc-6c36-4ea6-8de3-3f4574f88027)'
+      EnvironmentTag: '$(EnvironmentTag)'
+      ParentBusiness: '$(ParentBusiness)'
+      ServiceOffering: '$(ServiceOffering)'
+      ResourceGroup: 'dfc-prd-api-eventgridsubscriptions-rg'
+      PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
+      ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
+      FunctionAppDomain: "$(FunctionAppDomain)"
+      FunctionAppName: 'dfc-prd-api-eventgridsubscriptions-fa'
+      EnvironmentName: PRD_EventGridSubscriptions
+      DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)
+      ApimProductId: "$(ApimProductId)"
+      ApimLoggerName: "$(ApimLoggerName)"
+      APIProductInstanceName: "$(ApimProductInstanceName)"
+      ApimImportScript: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.Scripts/Import-ApimOpenApiDefinitionFromFile.ps1"
+      SpecificationPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.OpenApiDocs"
+      SharedResourceGroup: "$(SharedResourceGroup)"
+      ApimServiceName: "$(ApimServiceName)"
+      APIMPolicyPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies"
+      # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
+      # The top level -`s here defines an array of "something"
+      # The inner level -'s defines an array of mappings.
+      Apis: 
+        -
+          - name: Subscription
+            azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
+                
+- stage: DeployPRDDeadLetter
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: Deploy dead letter subscription to PRD_EventGridSubscriptions
+  dependsOn: DeployToPRDEventGridSubscriptions
+  variables:
+  - group: dfc-api-eventgridsubscriptions-prd
+  - group: dfc-app-shared-prd
+  jobs:
+  - job: DeployPRDDeadLetterJob
+    steps:
+    - task: AzurePowerShell@4
+      displayName: Deploy PRD Dead Letter Subs
+      inputs:
+        azureSubscription: 'SFA-DIG-Prod (6c93f7dc-6c36-4ea6-8de3-3f4574f88027)'
+        azurePowerShellVersion: LatestVersion
+        ScriptPath:  '$(Agent.BuildDirectory)/s/PSScripts/Create-Event-Subscription.ps1'
+        ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)"  `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
+          -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)"  `
+          -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)"  `
+          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
