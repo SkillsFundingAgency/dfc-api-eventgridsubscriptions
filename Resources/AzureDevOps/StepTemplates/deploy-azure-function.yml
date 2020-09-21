@@ -58,33 +58,33 @@ steps:
     SourcePath: '${{ parameters.APIMPolicyPath }}'
     TargetFileNames: 'ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml'
 
-# - task: AzurePowerShell@5
-#   displayName: 'Apply EventGrid APIM Policy'
-#   inputs:
-#     azureSubscription: '${{ parameters.AzureSubscription }}'
-#     ScriptType: InlineScript
-#     Inline: |
-#       $context = New-AzApiManagementContext -ResourceGroupName "$(SharedResourceGroupName)" -ServiceName "$(ApimServiceName)"
+- task: AzurePowerShell@5
+  displayName: 'Apply EventGrid APIM Policy'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptType: InlineScript
+    Inline: |
+      $context = New-AzApiManagementContext -ResourceGroupName "$(SharedResourceGroupName)" -ServiceName "$(ApimServiceName)"
       
-#       $policyFilePath = "$(System.DefaultWorkingDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
+      $policyFilePath = "$(System.DefaultWorkingDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
       
-#       $apiNames = 'tbc'
+      $apiNames = 'DFC Subscription API'
       
-#       $apiOperationNames = 'tbc'
+      $apiOperationNames = 'Processes an Event Grid Subscription Dead Lettered Event.'
       
-#       foreach ($apiName in $apiNames) {
-#           $api = ""
+      foreach ($apiName in $apiNames) {
+          $api = ""
       
-#           $api = Get-AzApiManagementApi -Context $Context -Name $apiName
+          $api = Get-AzApiManagementApi -Context $Context -Name $apiName
       
-#           foreach ($apiOperationName in $apiOperationNames) {
-#               $operation = ""
+          foreach ($apiOperationName in $apiOperationNames) {
+              $operation = ""
       
-#               $operation = Get-AzApiManagementOperation -Context $Context -ApiId $api.ApiId | where {$_.Name -eq $apiOperationName}
+              $operation = Get-AzApiManagementOperation -Context $Context -ApiId $api.ApiId | where {$_.Name -eq $apiOperationName}
       
-#               Write-Output "Applying policy to API: $($api.name) Operation: $($operation.name)"
+              Write-Output "Applying policy to API: $($api.name) Operation: $($operation.name)"
       
-#               Set-AzApiManagementPolicy -Context $Context -Format application/vnd.ms-azure-apim.policy.raw+xml -ApiId $api.ApiId -OperationId $operation.OperationId -PolicyFilePath $PolicyFilePath -Verbose
-#           }
-#       }
-#     azurePowerShellVersion: LatestVersion 
+              Set-AzApiManagementPolicy -Context $Context -Format application/vnd.ms-azure-apim.policy.raw+xml -ApiId $api.ApiId -OperationId $operation.OperationId -PolicyFilePath $PolicyFilePath -Verbose
+          }
+      }
+    azurePowerShellVersion: LatestVersion 
