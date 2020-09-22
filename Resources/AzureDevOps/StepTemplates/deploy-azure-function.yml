@@ -10,6 +10,7 @@ parameters:
   ApimImportScript: ''
   SpecificationPath: ''
   APIMPolicyPath: ''
+  APIProductInstanceName: ''
 
 steps:
 - checkout: dfc-devops
@@ -49,7 +50,7 @@ steps:
   inputs:
     azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: '${{ parameters.ApimImportScript }}'
-    ScriptArguments: "-ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -InstanceName '${{ parameters.ApimServiceName }}' -ApiName '${{ parameters.FunctionType }}' -OpenApiSpecificationFile '${{ parameters.SpecificationPath }}/${{ parameters.FunctionType }}OpenApi.txt' -ApiPath 'content/${{ parameters.FunctionType }}'"
+    ScriptArguments: "-ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -InstanceName '${{ parameters.ApimServiceName }}' -ApiName '${{ parameters.FunctionType }}' -OpenApiSpecificationFile '${{ parameters.SpecificationPath }}/${{ parameters.FunctionType }}OpenApi.txt' -ApiPath '${{ parameters.APIProductInstanceName }}/${{ parameters.FunctionType }}'"
     azurePowerShellVersion: LatestVersion
 
 - task: esfadevops.Tokenization.custom-build-task.Tokenization@0

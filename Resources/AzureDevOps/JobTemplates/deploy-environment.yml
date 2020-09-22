@@ -18,6 +18,7 @@ parameters:
   SharedResourceGroup: ''
   ApimServiceName: ''
   APIMPolicyPath: ''
+  APIProductInstanceName: ''
   # The 'Apis' parameter is a bit special here - it requires a structured, complex parameter:  an array of arrays of objects
   # Below is a simple example of what it expects:
   # - 
@@ -77,3 +78,4 @@ jobs:
                 ApimImportScript: '${{ parameters.ApimImportScript }}'
                 SpecificationPath:  '${{ parameters.SpecificationPath }}'
                 APIMPolicyPath: '${{ parameters.APIMPolicyPath }}'
+                APIProductInstanceName: '${{ parameters.APIProductInstanceName }}'
