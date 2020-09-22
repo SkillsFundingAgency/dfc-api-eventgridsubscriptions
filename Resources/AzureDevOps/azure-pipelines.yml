@@ -129,7 +129,7 @@ stages:
       # The inner level -'s defines an array of mappings.
       Apis: 
         -
-          - name: Subscription
+          - name: subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployDEVDeadLetter
