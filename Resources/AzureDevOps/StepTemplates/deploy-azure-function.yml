@@ -67,7 +67,7 @@ steps:
     Inline: |
       $context = New-AzApiManagementContext -ResourceGroupName "$(SharedResourceGroupName)" -ServiceName "$(ApimServiceName)"
       
-      $policyFilePath = "$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
+      $policyFilePath = "$(Pipeline.Workspace)/dfc-api-eventgridsubscriptions/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
       
       $apiNames = 'DFC Subscription API'
       
