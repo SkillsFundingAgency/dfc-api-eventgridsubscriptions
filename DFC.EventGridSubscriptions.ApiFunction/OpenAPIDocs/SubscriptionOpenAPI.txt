@@ -4,7 +4,7 @@ info:
   description: 'Add, Get and Remove Subscriptions to an Event Grid Topic'
   version: 1.0.0
 servers:
-- url: __FunctionAppUrl__
+  - url: __FunctionAppUrl__
 paths:
   /api/DeadLetter/api/updates:
     post:

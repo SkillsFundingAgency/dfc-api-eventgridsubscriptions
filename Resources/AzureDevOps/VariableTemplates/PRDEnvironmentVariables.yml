@@ -1,6 +1,6 @@
 variables:
 - name: ReleaseEnvironmentName
-  value: PP
+  value: PRD
 - name: aspTier
   value: Standard
 - name: aspInstances
@@ -8,4 +8,4 @@ variables:
 - name: aspSize
   value: 1
 - name: FunctionAppUrl
-  value: https://dfc-pp-api-eventgridsubscriptions-fa.ase-01.dfc.preprodazure.sfa.bis.gov.uk
+  value: https://dfc-prd-api-eventgridsubscriptions-fa.ase-01.dfc.prodazure.sfa.bis.gov.uk
