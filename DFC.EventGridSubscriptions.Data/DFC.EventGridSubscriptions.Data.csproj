@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DFC.Compui.Subscriptions" Version="1.0.82" />
     <PackageReference Include="Microsoft.Azure.Management.EventGrid" Version="6.0.0" />
   </ItemGroup>
 

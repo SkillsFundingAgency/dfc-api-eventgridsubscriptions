@@ -5,17 +5,26 @@
         "Environment": {
             "type": "string"
         },
-        "SharedAppServicePlanName": {
-            "type": "string",
-            "defaultValue": ""
+        "appSharedResourceGroup": {
+            "type": "string"
         },
-        "SharedAppServicePlanResourceGroup": {
-            "type": "string",
-            "defaultValue": ""
+        "appSharedStorageAccountName": {
+            "type": "string"
         },
-        "SharedKeyVaultRg": {
-            "type": "string",
-            "defaultValue": ""
+        "aspInstances": {
+            "type": "int"
+        },
+        "aspTier": {
+            "type": "string"
+        },
+        "aspSize": {
+            "type": "string"
+        },
+        "aseHostingEnvironmentName": {
+            "type": "string"
+        },
+        "aseResourceGroup": {
+            "type": "string"
         },
         "SharedKeyVaultName": {
             "type": "string",
@@ -28,19 +37,102 @@
         "EventGridTopicName": {
             "type": "string",
             "defaultValue": ""
+        },
+        "cosmosDbName": {
+            "type": "string"
+        },
+        "cosmosDbKey": {
+            "type": "securestring"
+        },
+        "ApimResourceGroup": {
+            "type": "string"
+        },
+        "ApimServiceName": {
+            "type": "string"
+        },
+        "ApiName": {
+            "type": "string"
+        },
+        "ApimProductInstanceName": {
+            "type": "string"
+        },
+        "ApimLoggerName": {
+            "type": "string"
         }
-
     },
     "variables": {
+        "appServicePlanName": "[concat(variables('resourcePrefix'), '-asp')]",
+        "appServicePlanResourceGroup": "[concat(variables('resourcePrefix'),'-rg')]",
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
-        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",        
+        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
-        "AppServicePlanName": "[if(greater(length(parameters('SharedAppServicePlanName')), 0), parameters('SharedAppServicePlanName'), concat(variables('ResourcePrefix'), '-asp'))]",
-        "AppServicePlanResourceGroup": "[if(greater(length(parameters('SharedAppServicePlanResourceGroup')), 0), parameters('SharedAppServicePlanResourceGroup'), resourceGroup().name)]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
-        "KeyVaultAccessPolicyName": "[concat(variables('ResourcePrefix'), '-kap')]"
+        "ApiName": "[concat(parameters('ApimProductInstanceName'), '-', parameters('ApiName'))]",
+        "cosmosDbCollectionPartitionKey": "/PartitionKey",
+        "cosmosDbDatabaseName": "dfc-eventstore",
+        "cosmosDbEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]"
+
     },
     "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "collections",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('appSharedResourceGroup')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'CosmosDb/cosmos-collection.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "accountName": {
+                        "value": "[parameters('cosmosDbName')]"
+                    },
+                    "databaseName": {
+                        "value": "[variables('cosmosDbDatabaseName')]"
+                    },
+                    "collectionName": {
+                        "value": "subscriptions"
+                    },
+                    "provisionRequestUnits": {
+                        "value": false
+                    },
+                    "partitionKey": {
+                        "value": "[variables('cosmosDbCollectionPartitionKey')]"
+                    }
+                }
+            }
+        },
+        {
+      "name": "[variables('ApiName')]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('ApimResourceGroup')]",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'APIM/apim-api.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "apimLoggerName": {
+            "value": "[parameters('ApimLoggerName')]"
+          },
+          "apimProductInstanceName": {
+            "value": "[parameters('ApimProductInstanceName')]"
+          },
+          "apimServiceName": {
+            "value": "[parameters('ApimServiceName')]"
+          },
+          "apiName": {
+            "value": "[variables('ApiName')]"
+          }
+        }
+      },
+      "dependsOn": [
+      ]
+    },
         {
             "apiVersion": "2017-05-10",
             "name": "[variables('AppServiceAppInsightsName')]",
@@ -63,6 +155,38 @@
         },
         {
             "apiVersion": "2017-05-10",
+            "name": "[variables('appServicePlanName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('buildingBlocksDfcBaseUrl'), 'app-service-plan.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServicePlanName": {
+                        "value": "[variables('appServicePlanName')]"
+                    },
+                    "aseHostingEnvironmentName": {
+                        "value": "[parameters('aseHostingEnvironmentName')]"
+                    },
+                    "aseResourceGroup": {
+                        "value": "[parameters('aseResourceGroup')]"
+                    },
+                    "aspSize": {
+                        "value": "[parameters('aspSize')]"
+                    },
+                    "aspInstances": {
+                        "value": "[parameters('aspInstances')]"
+                    },
+                    "nonASETier": {
+                        "value": "[parameters('aspTier')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
             "name": "[variables('FunctionAppName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -73,21 +197,39 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('FunctionAppName')]"
+                        "value": "[variables('functionAppName')]"
                     },
                     "appServicePlanName": {
-                        "value": "[variables('AppServicePlanName')]"
+                        "value": "[variables('appServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[variables('AppServicePlanResourceGroup')]"
+                        "value": "[variables('appServicePlanResourceGroup')]"
                     },
                     "appServiceType": {
                         "value": "functionapp"
                     },
+                    "deployStagingSlot": {
+                        "value": true
+                    },
+                    "clientAffinity": {
+                        "value": true
+                    },
                     "appServiceAppSettings": {
                         "value": [
                             {
+                                "name": "FUNCTIONS_EXTENSION_VERSION",
+                                "value": "~3"
+                            },
+                            {
+                                "name": "FUNCTIONS_WORKER_RUNTIME",
+                                "value": "dotnet"
+                            },
+                            {
                                 "name": "MSDEPLOY_RENAME_LOCKED_FILES",
+                                "value": "1"
+                            },
+                            {
+                                "name": "WEBSITE_RUN_FROM_PACKAGE",
                                 "value": "1"
                             },
                             {
@@ -95,8 +237,12 @@
                                 "value": "[reference(variables('AppServiceAppInsightsName')).outputs.InstrumentationKey.value]"
                             },
                             {
-                                "name": "WEBSITE_RUN_FROM_PACKAGE",
-                                "value": "1"
+                                "name": "AzureWebJobsStorage",
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appSharedStorageAccountName'),';AccountKey=',listKeys(resourceId(parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            },
+                            {
+                                "name": "Logging__ApplicationInsights__LogLevel__Default",
+                                "value": "Information"
                             },
                             {
                                 "name": "appregistration__id",
@@ -125,37 +271,64 @@
                             {
                                 "name": "EventGridSubscriptionClientOptions__TopicName",
                                 "value": "[parameters('EventGridTopicName')]"
-                            }                          
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__AccessKey",
+                                "value": "[parameters('cosmosDbKey')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__EndpointUrl",
+                                "value": "[variables('cosmosDbEndpoint')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__DatabaseId",
+                                "value": "[variables('cosmosDbDatabaseName')]"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__CollectionId",
+                                "value": "subscriptions"
+                            },
+                            {
+                                "name": "Configuration__CosmosDbConnections__EventGridSubscriptions__PartitionKey",
+                                "value": "[variables('cosmosDbCollectionPartitionKey')]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__RetryPolicyEventTimeToLiveInMinutes",
+                                "value": "1440"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__RetryPolicyMaxDeliveryAttempts",
+                                "value": "30"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterBlobContainerName",
+                                "value": "event-grid-dead-letter-events"
+                            },
+							{
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterStaleSubscriptionRemovalEnabled",
+                                "value": "false"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__DeadLetterBlobResourceId",
+                                "value": "[resourceId(subscription().subscriptionId, parameters('appSharedResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('appSharedStorageAccountName'))]"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__StaleSubscriptionInterval",
+                                "value": "01:00:00"
+                            },
+                            {
+                                "name": "EventGridSubscriptionClientOptions__StaleSubscriptionThreshold",
+                                "value": "1"
+                            }
                         ]
                     }
                 }
             },
             "dependsOn": [
+                "[variables('appServicePlanName')]",
                 "[variables('AppServiceAppInsightsName')]"
             ]
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "[variables('KeyVaultAccessPolicyName')]",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('SharedKeyVaultRg')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'KeyVault/keyvault-access-policy.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultName": {
-                        "value": "[parameters('SharedKeyVaultName')]"
-                    },
-                    "servicePrincipalObjectId": {
-                        "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('FunctionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
-                    }
-                },
-            "dependsOn": ["[variables('FunctionAppName')]"]
-            }
         }
     ],
     "outputs": {}
-    }
+}

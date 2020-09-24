@@ -1,0 +1,70 @@
+parameters:
+  AzureSubscription: ''
+  SetEsfaResourceGroupTagsScript: 'https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/PSScripts/Set-EsfaResourceGroupTags.ps1'
+  EnvironmentTag: ''
+  ParentBusiness: ''
+  ServiceOffering: ''
+  ResourceGroup: ''
+  Location: 'West Europe'
+  ArmTemplateFolder: ''
+  ArmOutputVariableName: 'ARMOutputs'
+
+steps:
+- powershell: |
+    Invoke-WebRequest -Uri "${{ parameters.SetEsfaResourceGroupTagsScript }}" -OutFile "${{ variables['System.DefaultWorkingDirectory']}}/Set-EsfaResourceGroupTags.ps1"
+  displayName: "Download scripts from dfc-devops repo"
+
+- task: AzurePowerShell@3
+  displayName:  "Create resource groups with tags"
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: "${{ variables['System.DefaultWorkingDirectory'] }}/Set-EsfaResourceGroupTags.ps1"
+    ScriptArguments: '-ResourceGroupName "${{ parameters.ResourceGroup }}" -Environment "${{ parameters.EnvironmentTag }}" -ParentBusiness "${{ parameters.ParentBusiness }}" -ServiceOffering "${{ parameters.ServiceOffering }}" -Verbose'
+    azurePowerShellVersion: LatestVersion
+
+- task: esfadevops.Tokenization.custom-build-task.Tokenization@0
+  displayName: 'Tokenization: Transform file parameters.json'
+  inputs:
+    SourcePath: '${{ parameters.ArmTemplateFolder }}'
+    TargetFileNames: parameters.json
+
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Azure Deployment:Create Or Update Resource Group action on ${{ parameters.ResourceGroup }}'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    resourceGroupName: '${{ parameters.ResourceGroup }}'
+    location: '${{ parameters.AzureLocation }}'
+    csmFile: '${{ parameters.ArmTemplateFolder }}/template.json'
+    csmParametersFile: '${{ parameters.ArmTemplateFolder }}/parameters.json'
+    deploymentOutputs: '$(ArmOutputVariableName)'
+
+- task: DeleteFiles@1
+  displayName: 'Delete tokenised parameters.json file'
+  inputs:
+    SourceFolder: '${{ parameters.ArmTemplateFolder }}'
+    Contents: parameters.json
+  condition: always()
+
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script: Creation of Service Principal'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/New-ServicePrincipalAndStoreSecrets.ps1"
+    ScriptArguments: -appSharedResourceGroupName "$(appSharedResourceGroup)" `
+          -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
+          -ServicePrincipalName "$(ServicePrincipalName)"  `
+          -RepoName dfc-api-eventgridsubscriptions  `
+          -KeyVaultName "$(sharedKeyVaultName)"  `
+          -TenantId "$(Authentication_Tenant)"  `
+          -EventGridResourceGroup "$(EventGridResourceGroup)"  `
+          -EventGridTopicName "$(EventGridTopicName)" -Verbose
+    azurePowerShellVersion: LatestVersion
+
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script: Keyvault permissions'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.PSScripts/Assign-KeyVault-Permissions-To-Identity.ps1"
+    ScriptArguments: "-KeyVaultName  $(sharedKeyVaultName) -ResourceGroupName $(sharedResourceGroup) -ServicePrincipalName '$(ServicePrincipalName)-fa' -Verbose"
+    azurePowerShellVersion: LatestVersion
+

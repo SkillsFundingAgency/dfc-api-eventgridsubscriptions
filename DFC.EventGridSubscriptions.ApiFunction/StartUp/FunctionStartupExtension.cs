@@ -1,4 +1,6 @@
-﻿using DFC.EventGridSubscriptions.ApiFunction.StartUp;
+﻿using DFC.Compui.Cosmos;
+using DFC.Compui.Cosmos.Contracts;
+using DFC.EventGridSubscriptions.ApiFunction.StartUp;
 using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using DFC.EventGridSubscriptions.Services.Extensions;
@@ -10,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 
 [assembly: FunctionsStartup(typeof(FunctionStartupExtension))]
 
@@ -30,7 +33,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             }
 
             var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(GetCustomSettingsPath())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
@@ -47,8 +50,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
             config = configBuilder.AddKeyVaultConfigurationProvider(config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>(), builder.Services.BuildServiceProvider()).Build();
 
             builder.Services.AddSingleton<IConfiguration>(config);
-            builder.Services.AddTransient<ISubscriptionRegistrationService, SubscriptionRegistrationService>();
+            builder.Services.AddTransient<ISubscriptionService, SubscriptionService>();
             builder.Services.AddEventGridManagementClient();
+
+            var cosmosDbConnectionEventGridSubscriptions = config.GetSection("Configuration:CosmosDbConnections:EventGridSubscriptions").Get<CosmosDbConnection>();
+            builder.Services.AddDocumentServices<SubscriptionModel>(cosmosDbConnectionEventGridSubscriptions, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT");
+        }
+
+        private static string GetCustomSettingsPath()
+        {
+            var home = Environment.GetEnvironmentVariable("HOME");
+            string? path;
+            if (home != null)
+            {
+                // We're on Azure
+                path = Path.Combine(home, "site", "wwwroot");
+            }
+            else
+            {
+                // Running locally
+                path = new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath;
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    path = Path.GetDirectoryName(path);
+                    DirectoryInfo parentDir = Directory.GetParent(path);
+                    path = parentDir.FullName;
+                }
+            }
+
+            return path ?? string.Empty;
         }
     }
 }

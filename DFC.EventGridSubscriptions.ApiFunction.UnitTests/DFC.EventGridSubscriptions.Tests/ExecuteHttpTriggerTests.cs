@@ -1,5 +1,6 @@
-﻿using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
+using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.EventGrid.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -24,14 +26,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         private readonly Execute _executeFunction;
         private readonly ILogger _log;
         private readonly HttpRequest _request;
-        private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly ISubscriptionService subscriptionRegistrationService;
         private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         public ExecuteHttpTriggerTests()
         {
             _request = A.Fake<HttpRequest>();
 
-            subscriptionRegistrationService = A.Fake<ISubscriptionRegistrationService>();
+            subscriptionRegistrationService = A.Fake<ISubscriptionService>();
 
             advancedFilterOptions = A.Fake<IOptionsMonitor<AdvancedFilterOptions>>();
 
@@ -126,10 +128,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         public async Task ExecuteWhenAddSubscriptionCalledReturnsCreatedResult()
         {
             //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
 
             //Act
             CreatedResult result = (CreatedResult)await RunFunction(null);
@@ -142,10 +144,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         public async Task ExecuteWhenAddSubscriptionCalledReturnsInternalServerErrorResult()
         {
             //Arrange
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.InternalServerError);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.InternalServerError);
             A.CallTo(() => _request.Method).Returns("POST");
             A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25, MaximumAdvancedFilters = 5 });
 
             //Act
             InternalServerErrorResult result = (InternalServerErrorResult)await RunFunction(null);
@@ -184,6 +186,36 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenAddSubscriptionShortSubscriptionNameCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "te"))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionBadSubscriptionNameCalledReturnsBadRequestObjectResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "#!*something^&*!"))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecuteWhenAddSubscriptionCalledNoEndpointReturnsBadRequestObjectResult()
         {
             //Arrange
@@ -201,7 +233,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         [Fact]
         public async Task ExecuteWhenAddSubscriptionCalledNoAdvancedFilterReturnsCreatedObjectResult()
         {
-            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionRequest>.Ignored)).Returns(HttpStatusCode.Created);
+            A.CallTo(() => subscriptionRegistrationService.AddSubscription(A<SubscriptionSettings>.Ignored)).Returns(HttpStatusCode.Created);
 
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
@@ -220,8 +252,38 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         {
             //Arrange
             A.CallTo(() => _request.Method).Returns("POST");
-            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true))));
-            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilterValues = 1 });
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1, MaximumAdvancedFilterValues = 25 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledAdvancedFilterValuesExceedMaximumReturnsBadRequestResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 2))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
+
+            //Act
+            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenAddSubscriptionCalledRelativeEndpointUriReturnsBadRequestResult()
+        {
+            //Arrange
+            A.CallTo(() => _request.Method).Returns("POST");
+            A.CallTo(() => _request.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetRequestBody(true, true, true, true, "a-test-subscription", 1, "somewhere.com/somelocation", false))));
+            A.CallTo(() => advancedFilterOptions.CurrentValue).Returns(new AdvancedFilterOptions { MaximumAdvancedFilters = 1 });
 
             //Act
             BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
@@ -297,6 +359,42 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
         }
 
         [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsServiceUnavailableResult()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
+            A.CallTo(() => _request.Method).Returns("DELETE");
+            //Execute async manually - happens automatically in request pipeline
+            var context = new ActionContext();
+            context.HttpContext = A.Fake<HttpContext>();
+
+            //Act
+            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+            await result.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, context.HttpContext.Response.StatusCode);
+            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, (int)result.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteWhenDeleteSubscriptionCalledReturnsNullActionContextParameter()
+        {
+            //Arrange
+            A.CallTo(() => subscriptionRegistrationService.DeleteSubscription(A<string>.Ignored)).Throws<RestException>();
+            A.CallTo(() => _request.Method).Returns("DELETE");
+            //Execute async manually - happens automatically in request pipeline
+            var context = new ActionContext();
+            context.HttpContext = A.Fake<HttpContext>();
+
+            //Act
+            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+
+            // Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await result.ExecuteResultAsync(null).ConfigureAwait(false));
+        }
+
+        [Fact]
         public async Task ExecuteWhenDeleteSubscriptionCalledNullSubscriptionNameReturnsBadRequestObjectResult()
         {
             //Arrange
@@ -315,13 +413,20 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             return await _executeFunction.Run(_request, _log, subscriptionName).ConfigureAwait(false);
         }
 
-        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName)
+        private string GetRequestBody(bool includeEndpoint, bool includeSimpleFilter, bool includeAdvancedFilter, bool includeName, string subscriptionName = "A-Test-Subscription", int numberOfFilters = 1, string endpointAddress = "http://somewhere.com/somewebhook/receive", bool isUriAbsolute = true)
         {
-            return JsonConvert.SerializeObject(new SubscriptionRequest
+            var advancedFilters = new List<SubscriptionPropertyContainsFilter>();
+
+            for (int i = 0; i < numberOfFilters; i++)
             {
-                Endpoint = includeEndpoint ? new Uri("http://somewhere.com/somewebhook/receive") : null,
-                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilter = includeAdvancedFilter ? new StringInAdvancedFilter("subject", new List<string> { "a", "b", "c" }) : null },
-                Name = includeName ? "A-Test-Subscription" : null
+                advancedFilters.Add(new SubscriptionPropertyContainsFilter { Key = "subject", Values = new List<string> { "a", "b", "c" }.ToArray() });
+            }
+
+            return JsonConvert.SerializeObject(new SubscriptionSettings
+            {
+                Endpoint = includeEndpoint ? new Uri(endpointAddress, isUriAbsolute ? UriKind.Absolute : UriKind.Relative) : null,
+                Filter = new SubscriptionFilter { BeginsWith = includeSimpleFilter ? "abeginswith" : null, EndsWith = includeSimpleFilter ? "anendswith" : null, PropertyContainsFilters = includeAdvancedFilter ? advancedFilters : null },
+                Name = includeName ? subscriptionName : null
             });
         }
     }

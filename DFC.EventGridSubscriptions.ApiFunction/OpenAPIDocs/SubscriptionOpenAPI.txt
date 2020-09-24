@@ -4,8 +4,31 @@ info:
   description: 'Add, Get and Remove Subscriptions to an Event Grid Topic'
   version: 1.0.0
 servers:
-- url: __FunctionAppUrl__
+  - url: __FunctionAppUrl__
 paths:
+  /api/DeadLetter/api/updates:
+    post:
+      tags:
+      - Dead Lettered Events
+      summary: Processes an Event Grid Subscription Dead Lettered Event.
+      description: Processes an Event Grid Subscription Dead Lettered Event.
+      operationId: AddDeadLetteredEvent
+      requestBody:
+        description: The subscription to create
+        required: true
+        content:
+         application/json:
+          schema:
+            $ref: '#/components/schemas/DeadLetteredEvent'
+      responses:
+        201:
+          description: created
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
   /api/Execute/:
     post:
       tags:
@@ -194,6 +217,52 @@ components:
           type: string
         type:
           type: string
+    DeadLetteredEvent:
+      title: A Dead lettered event
+      type: array
+      items:
+        type: object
+        properties:
+          topic:
+            type: string
+          subject:
+            type: string
+          eventType:
+            type: string
+          id:
+            type: string
+          data:
+            type: object
+            properties:
+              api:
+                type: string
+              clientRequestId:
+                type: string
+              requestId:
+                type: string
+              eTag:
+                type: string
+              contentType:
+                type: string
+              contentLength:
+                type: number
+              blobType:
+                type: string
+              url:
+                type: string
+              sequencer:
+                type: string
+              storageDiagnostics:
+                type: object
+                properties:
+                  batchId:
+                    type: string
+          dataVersion:
+            type: string
+          metadataVersion:
+            type: string
+          eventTime:
+            type: string
     SubscriptionArray:
       title: A subscription array response
       type: object

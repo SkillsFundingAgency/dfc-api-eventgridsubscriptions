@@ -5,14 +5,26 @@
         "Environment": {
             "value": "__ReleaseEnvironmentName__"
         },
-        "SharedAppServicePlanName": {
-            "value": "__sharedAppServicePlanName__"
-        },
-        "SharedAppServicePlanResourceGroup": {
+        "appSharedResourceGroup": {
             "value": "__appSharedResourceGroup__"
         },
-        "sharedKeyVaultRg": {
+        "appSharedStorageAccountName": {
+            "value": "__appSharedStorageAccountName__"
+        },
+        "aseHostingEnvironmentName": {
+            "value": "__AseServiceName__"
+        },
+        "aseResourceGroup": {
             "value": "__sharedResourceGroup__"
+        },
+        "aspInstances": {
+            "value": __aspInstances__
+        },
+        "aspTier": {
+            "value": "__aspTier__"
+        },
+        "aspSize": {
+            "value": "__aspSize__"
         },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
@@ -22,6 +34,27 @@
         },
         "EventGridTopicName": {
             "value": "__eventGridTopicName__"
+        },
+        "cosmosDbName": {
+            "value": "__appSharedCosmosDBName__"
+        },
+        "cosmosDbKey": {
+            "value": "__appSharedCosmosPrimaryKey__"
+        },
+        "ApimResourceGroup": {
+            "value": "__SharedResourceGroupName__"
+        },
+        "ApimServiceName": {
+            "value": "__ApimServiceName__"
+        },
+        "ApiName": {
+            "value": "__ApiName__"
+        },
+        "ApimLoggerName": {
+            "value": "__ApimLoggerName__"
+        },
+        "ApimProductInstanceName": {
+            "value": "__ApimProductInstanceName__"
         }
     }
 }

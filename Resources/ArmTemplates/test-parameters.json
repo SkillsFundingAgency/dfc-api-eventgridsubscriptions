@@ -5,14 +5,26 @@
         "Environment": {
             "value": "dev"
         },
-        "SharedAppServicePlanName": {
-            "value": "dfc-dev-app-shared-asp"
-        },
-        "SharedAppServicePlanResourceGroup": {
+        "appSharedResourceGroup": {
             "value": "dfc-dev-app-sharedresources-rg"
         },
-        "sharedKeyVaultRg": {
-            "value": "dfc-dev-app-sharedrsources-rg"
+        "appSharedStorageAccountName": {
+            "value": "dfcdevappsharedstr"
+        },
+        "aspInstances": {
+            "value": 1
+        },
+        "aspTier": {
+            "value": "Standard"
+        },
+        "aspSize": {
+            "value": "2"
+        },
+        "aseHostingEnvironmentName": {
+            "value": "__AseServiceName__"
+        },
+        "aseResourceGroup": {
+            "value": "__aseResourceGroup__"
         },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"
@@ -22,7 +34,27 @@
         },
         "EventGridTopicName": {
             "value": "Event-Grid-Topic-Name"
+        },
+        "cosmosDbName": {
+            "value": "my-cosmos-name"
+        },
+        "cosmosDbKey": {
+            "value": "my-cosomos-key"
+        },
+        "ApimResourceGroup": {
+            "value": "dfc-test-template-rg"
+        },
+        "ApimServiceName": {
+            "value": "an-apim-instance"
+        },
+        "ApiName": {
+            "value": "api-name"
+        },
+        "ApimLoggerName": {
+            "value": "composite-ui-logger"
+        },
+        "ApimProductInstanceName": {
+            "value": "composite-ui"
         }
-
     }
 }

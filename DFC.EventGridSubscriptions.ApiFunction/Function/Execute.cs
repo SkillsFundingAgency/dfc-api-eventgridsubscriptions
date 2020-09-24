@@ -1,5 +1,6 @@
-﻿using DFC.EventGridSubscriptions.Data;
-using DFC.EventGridSubscriptions.Data.Models;
+﻿using DFC.Compui.Subscriptions.Pkg.Data;
+using DFC.EventGridSubscriptions.ApiFunction.ServiceResult;
+using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,9 +8,13 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -20,7 +25,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
     /// </summary>
     public class Execute
     {
-        private readonly ISubscriptionRegistrationService subscriptionRegistrationService;
+        private readonly ISubscriptionService subscriptionRegistrationService;
         private readonly IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions;
 
         /// <summary>
@@ -28,7 +33,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         /// </summary>
         /// <param name="subscriptionRegistrationService">A Subscription Registration Service.</param>
         /// <param name="advancedFilterOptions">The Advanced Filter Options.</param>
-        public Execute(ISubscriptionRegistrationService subscriptionRegistrationService, IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions)
+        public Execute(ISubscriptionService subscriptionRegistrationService, IOptionsMonitor<AdvancedFilterOptions> advancedFilterOptions)
         {
             this.subscriptionRegistrationService = subscriptionRegistrationService;
             this.advancedFilterOptions = advancedFilterOptions;
@@ -47,6 +52,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
         {
             try
             {
+                if (Activity.Current == null)
+                {
+                    Activity.Current = new Activity($"{nameof(Execute)}").Start();
+                }
+
                 log.LogInformation("Subscription function execution started");
 
                 if (req == null || string.IsNullOrEmpty(req.Method))
@@ -72,6 +82,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 log.LogError(e.ToString());
                 return new BadRequestObjectResult(e);
             }
+            catch (RestException e)
+            {
+                log.LogError(e.ToString());
+                return new ServiceUnavailableObjectResult(e.ToString());
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -81,14 +96,14 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             }
         }
 
-        private static async Task<SubscriptionRequest> GetBodyParametersAsync(Stream body)
+        private static async Task<SubscriptionSettings> GetBodyParametersAsync(Stream body)
         {
             using (var stream = new StreamReader(body))
             {
                 var content = await stream.ReadToEndAsync().ConfigureAwait(false);
 
                 //Extract Request Body and Parse To Class
-                SubscriptionRequest subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(content);
+                SubscriptionSettings subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionSettings>(content);
 
                 return subscriptionRequest;
             }
@@ -104,19 +119,31 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
         private static void ValidatePostParameters(HttpRequest req)
         {
-            if (req.Body == null || req.Body.Length == 0)
+            if (req.Body == null)
             {
                 throw new ArgumentException(nameof(req.Body));
             }
         }
 
-        private bool ValidateBodyParameters(SubscriptionRequest request, out string message)
+        private bool ValidateBodyParameters(SubscriptionSettings request, out string message)
         {
             message = string.Empty;
+
+            if (request == null)
+            {
+                message = $"Invalid Body in Request";
+                return false;
+            }
 
             if (string.IsNullOrEmpty(request.Name))
             {
                 message = $"{nameof(request.Name)} not present in request";
+                return false;
+            }
+
+            if (Regex.Match(request.Name, "^[a-zA-Z 0-9\\-]{3,64}$").Captures.Count == 0)
+            {
+                message = $"Subscriber name must be between 3 and 64 characters long and only contain characters a-z, A-Z, 0-9, and '-'";
                 return false;
             }
 
@@ -126,11 +153,34 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 return false;
             }
 
-            //No more than 5 advanced filters are supported by Event Grid
-            if (request.Filter != null && request.Filter.PropertyContainsFilter != null && request.Filter.PropertyContainsFilter.Values.Count > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+            if (!request.Endpoint.IsAbsoluteUri)
             {
-                message = $"{nameof(request.Filter.PropertyContainsFilter)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                message = $"{nameof(request.Endpoint)} not in correct format";
                 return false;
+            }
+
+            //Validate for maximum filter counts
+            if (request.Filter != null)
+            {
+                int? filterValueCount = 0;
+                filterValueCount += request.Filter!.PropertyContainsFilters != null ? request.Filter.PropertyContainsFilters.Select(x => x.Values).Count() : 0;
+                filterValueCount += request.Filter.AdvancedFilters != null ? request.Filter.AdvancedFilters.Select(z => z.Values).Count() : 0;
+
+                if (filterValueCount > advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues)
+                {
+                    message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilterValues} advanced filter values";
+                    return false;
+                }
+
+                int? filterCount = 0;
+                filterCount += request.Filter!.PropertyContainsFilters != null ? request.Filter.PropertyContainsFilters.Count : 0;
+                filterCount += request.Filter.AdvancedFilters != null ? request.Filter.AdvancedFilters.Count : 0;
+
+                if (filterCount > advancedFilterOptions.CurrentValue.MaximumAdvancedFilters)
+                {
+                    message = $"{nameof(request.Filter.PropertyContainsFilters)} cannot provide more than {advancedFilterOptions.CurrentValue.MaximumAdvancedFilters} advanced filters";
+                    return false;
+                }
             }
 
             return true;
