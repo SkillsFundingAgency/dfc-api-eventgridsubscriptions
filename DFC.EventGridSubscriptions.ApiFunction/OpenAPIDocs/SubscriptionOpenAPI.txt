@@ -1,6 +1,6 @@
 ﻿openapi: 3.0.1
 info:
-  title: DFC Subscription API
+  title: Composite UI
   description: 'Add, Get and Remove Subscriptions to an Event Grid Topic'
   version: 1.0.0
 servers:
