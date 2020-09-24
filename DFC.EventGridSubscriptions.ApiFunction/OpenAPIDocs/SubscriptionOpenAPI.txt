@@ -29,6 +29,96 @@ paths:
         500:
           description: Missing App Settings or Config Files.
           content: {}
+  /api/Execute/:
+    post:
+      tags:
+      - Subscription
+      summary: Add a subscription to Event Grid.
+      description: Returns all of a particular content type.
+      operationId: AddSubscription
+      requestBody:
+        description: The subscription to create
+        required: true
+        content:
+         application/json:
+          schema:
+            $ref: '#/components/schemas/SubscriptionRequest'
+      responses:
+        201:
+          description: created
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
+    get:
+      tags:
+      - Subscription
+      summary: Get all subscriptions from Event Grid.
+      description: Gets all webhook subscriptions from an Event Grid Topic
+      operationId: GetSubscripions
+      responses:
+        200:
+          description: Subscriptions Reetrieved.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionArray'
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
+  /api/Execute/{subscriptionName}:
+    get:
+      tags:
+      - Subscription
+      summary: Get a subscription from Event Grid.
+      parameters:
+        - in: path
+          name: subscriptionName
+          schema:
+            type: string
+          required: true
+      description: Gets a webhook subscription from an Event Grid Topic
+      operationId: GetSubscripionByName
+      responses:
+        200:
+          description: Subscription Reetrieved.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
+    delete:
+      tags:
+      - Subscription
+      summary: Delete a subscription to Event Grid.
+      parameters:
+        - in: path
+          name: subscriptionName
+          schema:
+            type: string
+          required: true
+      description: Deletes a webhook subscription to an Event Grid Topic
+      operationId: DeleteSubscription
+      responses:
+        200:
+          description: Subscription Deleted.
+          content: {}
+        400:
+          description: Missing data from body or parameters have not been supplied for query.
+          content: {}
+        500:
+          description: Missing App Settings or Config Files.
+          content: {}
 components:
   schemas:
     SubscriptionRequest:
