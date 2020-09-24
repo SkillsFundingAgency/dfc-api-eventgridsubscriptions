@@ -11,6 +11,7 @@ parameters:
   SpecificationPath: ''
   APIMPolicyPath: ''
   APIProductInstanceName: ''
+  ApiName: ''
 
 steps:
 - checkout: dfc-devops
