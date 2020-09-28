@@ -1,3 +1,9 @@
+variables:
+  ApimProductId: 'composite-ui'
+  ApiVersionNumber: 'v1'
+  DeadLetterBlobContainerName: 'event-grid-dead-letter-events'
+  ApiName: 'subscriptions'
+
 resources:
   repositories:
   - repository: self
@@ -94,7 +100,6 @@ stages:
   displayName: Deploy environment to DEV_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
-  - group: dfc-api-eventgridsubscriptions-dev
   - group: dfc-shared-dev
   - group: dfc-app-shared-all
   - group: dfc-app-shared-dev
@@ -138,9 +143,9 @@ stages:
   displayName: Deploy dead letter subscription to DEV_EventGridSubscriptions
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
-  - group: dfc-api-eventgridsubscriptions-dev
   - group: dfc-app-shared-dev
   - group: dfc-shared-dev
+  - template: VariableTemplates\DevEnvironmentVariables.yml
   jobs:
   - job: DeployDEVDeadLetterJob
     steps:
@@ -208,6 +213,7 @@ stages:
   - group: dfc-api-eventgridsubscriptions-sit
   - group: dfc-app-shared-sit
   - group: dfc-shared-sit
+  - template: VariableTemplates\SitEnvironmentVariables.yml
   jobs:
   - job: DeploySITDeadLetterJob
     steps:
@@ -273,6 +279,7 @@ stages:
   - group: dfc-api-eventgridsubscriptions-pp
   - group: dfc-app-shared-pp
   - group: dfc-shared-pp
+  - template: VariableTemplates\PPEnvironmentVariables.yml
   jobs:
   - job: DeployPPDeadLetterJob
     steps:
@@ -338,6 +345,7 @@ stages:
   - group: dfc-api-eventgridsubscriptions-prd
   - group: dfc-app-shared-prd
   - group: dfc-shared-prd
+  - template: VariableTemplates\PRDEnvironmentVariables.yml
   jobs:
   - job: DeployPRDDeadLetterJob
     steps:

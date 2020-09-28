@@ -9,3 +9,13 @@ variables:
   value: 1
 - name: FunctionAppUrl
   value: https://dfc-pp-api-eventgridsubscriptions-fa.ase-01.dfc.preprodazure.sfa.bis.gov.uk
+- name: DeadLetterSubscriptionName
+  value: dfc-pp-dead-letter-egs
+- name: EventGridResourceGroup
+  value: dfc-pp-stax-editor-rg
+- name: EventGridTopicName
+  value: dfc-pp-stax-egt
+- name: ServicePrincipalName
+  value: dfc-pp-api-eventgridsubscriptions
+- name: DeadLetterSubscriptionEndPoint
+  value: $(ApimProxyAddress)/composite-ui/subscription/api/DeadLetter/api/updates?subscription-key=$(ApimCompositeKey)
