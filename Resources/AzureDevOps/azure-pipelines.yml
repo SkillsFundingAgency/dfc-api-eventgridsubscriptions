@@ -166,7 +166,6 @@ stages:
   displayName: Deploy environment to SIT_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
-  - group: dfc-api-eventgridsubscriptions-sit
   - group: dfc-shared-sit
   - group: dfc-app-shared-all
   - group: dfc-app-shared-sit
@@ -210,7 +209,6 @@ stages:
   displayName: Deploy dead letter subscription to SIT_EventGridSubscriptions
   dependsOn: DeployToSITEventGridSubscriptions
   variables:
-  - group: dfc-api-eventgridsubscriptions-sit
   - group: dfc-app-shared-sit
   - group: dfc-shared-sit
   - template: VariableTemplates\SitEnvironmentVariables.yml
@@ -234,7 +232,6 @@ stages:
   displayName: Deploy environment to PP_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
-  - group: dfc-api-eventgridsubscriptions-pp
   - group: dfc-shared-pp
   - group: dfc-app-shared-all
   - group: dfc-app-shared-pp
@@ -276,7 +273,6 @@ stages:
   displayName: Deploy dead letter subscription to PP_EventGridSubscriptions
   dependsOn: DeployToPPEventGridSubscriptions
   variables:
-  - group: dfc-api-eventgridsubscriptions-pp
   - group: dfc-app-shared-pp
   - group: dfc-shared-pp
   - template: VariableTemplates\PPEnvironmentVariables.yml
@@ -300,7 +296,6 @@ stages:
   displayName: Deploy environment to PRD_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
-  - group: dfc-api-eventgridsubscriptions-prd
   - group: dfc-shared-prd
   - group: dfc-app-shared-all
   - group: dfc-app-shared-prd
@@ -342,7 +337,6 @@ stages:
   displayName: Deploy dead letter subscription to PRD_EventGridSubscriptions
   dependsOn: DeployToPRDEventGridSubscriptions
   variables:
-  - group: dfc-api-eventgridsubscriptions-prd
   - group: dfc-app-shared-prd
   - group: dfc-shared-prd
   - template: VariableTemplates\PRDEnvironmentVariables.yml
