@@ -138,7 +138,7 @@ else {
     $ApplicationId = $AdServicePrincipal.ApplicationId
     $checkMsg = "Checking for service principal with Application ID $ApplicationId"
     Write-Verbose $checkMsg
-    $cmd = "az ad sp show --id ($ApplicationId)";
+    $cmd = "az ad sp show --id $ApplicationId";
     Invoke-Expression $cmd
     while($lastExitCode -ne 0 -and $elapsed -le $limit) {
         $elapsedSeconds = $elapsed + "s";
