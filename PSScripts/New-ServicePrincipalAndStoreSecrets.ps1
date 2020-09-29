@@ -97,7 +97,30 @@ if(!$AdServicePrincipal) {
         $AdServicePrincipal = New-AzADServicePrincipal -PasswordCredentials $Credentials -DisplayName $ServicePrincipalName -Verbose -ErrorAction Stop 
         # delay for 1.5mins because it takes time for Azure to see the new SP
         
-
+        $elapsed = 0;
+        $delay = 3;
+        $limit = 1 * 60;
+        
+        $checkMsg = "Checking for service principal $ServicePrincipalName"
+        Write-Verbose $checkMsg
+        $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
+        while(!$AdServicePrincipal -and $elapsed -le $limit) {
+            $elapsedSeconds = "$elapsed secs";
+            Write-Verbose "Service principal is not yet available. Retrying in $delay seconds... ($elapsedSeconds elapsed)"
+            Start-Sleep -Seconds $delay;
+            $elapsed += $delay;
+        
+            Write-Verbose $checkMsg
+            $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
+        }
+        
+        if(!$AdServicePrincipal) {
+            Write-Verbose "Service principal did not become ready within the allotted time."
+            throw "Service principal $ServicePrincipalName did not become ready within the allotted time"
+        }
+    
+        Write-Verbose "Service principal is now available for use."
+    
     }
     catch {
         throw "Error creating Service Principal $ServicePrincipalName)"
@@ -129,31 +152,6 @@ if(!$AdServicePrincipal) {
     
 }
 else {
-
-    $elapsed = 0;
-    $delay = 3;
-    $limit = 1 * 60;
-    $ServicePrincipalName = "bobdoe"
-    
-    $checkMsg = "Checking for service principal $ServicePrincipalName"
-    Write-Verbose $checkMsg
-    $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
-    while(!$AdServicePrincipal -and $elapsed -le $limit) {
-        $elapsedSeconds = "$elapsed secs";
-        Write-Verbose "Service principal is not yet available. Retrying in $delay seconds... ($elapsedSeconds elapsed)"
-        Start-Sleep -Seconds $delay;
-        $elapsed += $delay;
-    
-        Write-Verbose $checkMsg
-        $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
-    }
-    
-    if(!$AdServicePrincipal) {
-        Write-Verbose "Service principal did not become ready within the allotted time."
-        throw "Service principal $ServicePrincipalName did not become ready within the allotted time"
-    }
-    
-    Write-Verbose "Service principal is now available for use."
 
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
