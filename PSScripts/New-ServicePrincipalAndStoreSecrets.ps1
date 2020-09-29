@@ -132,7 +132,8 @@ else {
 
     $elapsed = 0;
     $delay = 3;
-    $limit = 5 * 60;
+    $limit = 1 * 60;
+    $ServicePrincipalName = "bobdoe"
     
     $checkMsg = "Checking for service principal $ServicePrincipalName"
     Write-Verbose $checkMsg
