@@ -95,6 +95,10 @@ if(!$AdServicePrincipal) {
     try {
         Write-Verbose "Registering service principal ..."
         $AdServicePrincipal = New-AzADServicePrincipal -PasswordCredentials $Credentials -DisplayName $ServicePrincipalName -Verbose -ErrorAction Stop 
+        # delay for 1.5mins because it takes time for Azure to see the new SP
+
+
+
     }
     catch {
         throw "Error creating Service Principal $ServicePrincipalName)"
@@ -126,6 +130,35 @@ if(!$AdServicePrincipal) {
     
 }
 else {
+
+    $elapsed = 0;
+    $delay = 3;
+    $limit = 5 * 60;
+
+    $ApplicationId = $AdServicePrincipal.ApplicationId
+    $checkMsg = "Checking for service principal with Application ID $ApplicationId"
+    Write-Verbose $checkMsg
+    $cmd = "az ad sp show --id ($ApplicationId)";
+    Invoke-Expression $cmd
+    while($lastExitCode -ne 0 -and $elapsed -le $limit) {
+        $elapsedSeconds = $elapsed + "s";
+        Write-Verbose "Service principal is not yet available. Retrying in $delay seconds... ($elapsedSeconds elapsed)"
+        Start-Sleep -Seconds $delay;
+        $elapsed += $delay;
+
+        Write-Verbose $checkMsg
+        Invoke-Expression $cmd;
+    }
+
+    if($lastExitCode -ne 0) {
+        Write-Verbose "Service principal did not become ready within the allotted time."
+        exit 1
+    }
+
+    if($lastExitCode -eq 0) {
+        Write-Verbose "Service principal is now available for use."
+        exit 1
+    }
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
 }
