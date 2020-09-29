@@ -130,8 +130,8 @@ if(!$AdServicePrincipal) {
     
 }
 else {
-    
-    Check-If-Service-Principal-Ready -ServicePrincipalName $ServicePrincipalName
+
+    Check-If-Service-Principal.ps1-Ready -ServicePrincipalName $ServicePrincipalName
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
 
 }
