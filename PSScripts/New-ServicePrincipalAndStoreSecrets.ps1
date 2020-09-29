@@ -139,7 +139,7 @@ else {
     Write-Verbose $checkMsg
     $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
     while(!$AdServicePrincipal -and $elapsed -le $limit) {
-        $elapsedSeconds = $elapsed + "s";
+        $elapsedSeconds = "$elapsed secs";
         Write-Verbose "Service principal is not yet available. Retrying in $delay seconds... ($elapsedSeconds elapsed)"
         Start-Sleep -Seconds $delay;
         $elapsed += $delay;
