@@ -8,7 +8,7 @@ variables:
 - name: aspSize
   value: 2
 - name: FunctionAppUrl
-  value: https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net
+  value: ''
 - name: DeadLetterSubscriptionName
   value: dfc-dev-dead-letter-egs
 - name: EventGridResourceGroup

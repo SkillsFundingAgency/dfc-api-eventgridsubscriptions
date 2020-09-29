@@ -8,7 +8,7 @@ variables:
 - name: aspSize
   value: 1
 - name: FunctionAppUrl
-  value: https://dfc-prd-api-eventgridsubscriptions-fa.ase-01.dfc.prodazure.sfa.bis.gov.uk
+  value: ''
 - name: DeadLetterSubscriptionName
   value: dfc-prd-dead-letter-egs
 - name: EventGridResourceGroup
