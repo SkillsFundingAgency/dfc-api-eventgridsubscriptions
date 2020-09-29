@@ -150,8 +150,9 @@ else {
     
     if(!$AdServicePrincipal) {
         Write-Verbose "Service principal did not become ready within the allotted time."
-        exit 1
-    }    
+        throw "Service principal $ServicePrincipalName did not become ready within the allotted time"
+    }
+    
     Write-Verbose "Service principal is now available for use."
 
     Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
