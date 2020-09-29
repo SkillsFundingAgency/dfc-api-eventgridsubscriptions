@@ -8,4 +8,14 @@ variables:
 - name: aspSize
   value: 2
 - name: FunctionAppUrl
-  value: https://dfc-dev-api-eventgridsubscriptions-fa.azurewebsites.net
+  value: ''
+- name: DeadLetterSubscriptionName
+  value: dfc-dev-dead-letter-egs
+- name: EventGridResourceGroup
+  value: dfc-dev-stax-editor-rg
+- name: EventGridTopicName
+  value: dfc-dev-stax-egt
+- name: ServicePrincipalName
+  value: dfc-dev-api-eventgridsubscriptions
+- name: DeadLetterSubscriptionEndPoint
+  value: $(ApimProxyAddress)/composite-ui/subscription/api/DeadLetter/api/updates?subscription-key=$(ApimCompositeKey)

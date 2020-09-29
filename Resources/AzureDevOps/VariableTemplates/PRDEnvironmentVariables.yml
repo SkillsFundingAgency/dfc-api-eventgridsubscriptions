@@ -8,4 +8,14 @@ variables:
 - name: aspSize
   value: 1
 - name: FunctionAppUrl
-  value: https://dfc-prd-api-eventgridsubscriptions-fa.ase-01.dfc.prodazure.sfa.bis.gov.uk
+  value: ''
+- name: DeadLetterSubscriptionName
+  value: dfc-prd-dead-letter-egs
+- name: EventGridResourceGroup
+  value: dfc-prd-stax-editor-rg
+- name: EventGridTopicName
+  value: dfc-prd-stax-egt
+- name: ServicePrincipalName
+  value: dfc-prd-api-eventgridsubscriptions
+- name: DeadLetterSubscriptionEndPoint
+  value: $(ApimProxyAddress)/composite-ui/subscription/api/DeadLetter/api/updates?subscription-key=$(ApimCompositeKey)
