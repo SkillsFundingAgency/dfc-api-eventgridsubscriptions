@@ -1,12 +1,9 @@
-﻿using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
-using DFC.Compui.Cosmos.Contracts;
+﻿using DFC.Compui.Cosmos.Contracts;
 using DFC.Compui.Subscriptions.Pkg.Data;
 using DFC.EventGridSubscriptions.Data;
 using DFC.EventGridSubscriptions.Services;
 using FakeItEasy;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Management.EventGrid.Models;
-using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
