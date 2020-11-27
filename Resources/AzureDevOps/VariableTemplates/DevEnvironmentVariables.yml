@@ -11,6 +11,10 @@ variables:
   value: ''
 - name: DeadLetterSubscriptionName
   value: dfc-dev-dead-letter-egs
+- name: RateLimitRenewalPeriod
+  value: 10
+- name: RateLimitRequests
+  value: 10
 - name: EventGridResourceGroup
   value: dfc-dev-stax-editor-rg
 - name: EventGridTopicName
