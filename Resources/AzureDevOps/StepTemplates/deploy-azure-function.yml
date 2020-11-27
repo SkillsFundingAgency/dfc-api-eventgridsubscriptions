@@ -103,5 +103,5 @@ steps:
     azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSCoreScripts/Set-ApimPolicy.ps1'
     #ScriptArguments: "-PolicyScope api -ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -ApimServiceName '${{ parameters.ApimServiceName }}' -ApiId 'composite-ui-subscriptions' -PolicyFilePath "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolices/ApimPolicy-RateLimit.xml"
-    ScriptArguments: '-PolicyScope api -ApimResourceGroup ${{ parameters.SharedResourceGroup }} -ApimServiceName ${{ parameters.ApimServiceName }} -PolicyFilePath "$(System.DefaultWorkingDirectory)/_dfc-api-eventgridsubscriptions/DFC.Api.EventGridSubscriptions.Resources.ApimPolices/ApimPolicy-RateLimit.xml" -ApiId composite-ui-subscriptions'
+    ScriptArguments: '-PolicyScope api -ApimResourceGroup ${{ parameters.SharedResourceGroup }} -ApimServiceName ${{ parameters.ApimServiceName }} -PolicyFilePath "$(Agent.BuildDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolices/ApimPolicy-RateLimit.xml" -ApiId composite-ui-subscriptions'
     azurePowerShellVersion: LatestVersion
