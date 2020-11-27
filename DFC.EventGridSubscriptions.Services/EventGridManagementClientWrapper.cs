@@ -3,6 +3,7 @@ using Microsoft.Azure.Management.EventGrid.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,10 +37,15 @@ namespace DFC.EventGridSubscriptions.Services
         public async Task<IEnumerable<EventSubscription>> Subscription_GetAllAsync(string resourceGroupName, string topicName, CancellationToken cancellationToken = default)
         {
             //todo: this just gets first 20 subscribers - need to get all (max page size is 100, so will have to page)
+            //todo: either page through all results here, or support paging through this api
             //SDK appears out of line with web reference:
             //https://docs.microsoft.com/en-us/rest/api/eventgrid/version2020-06-01/eventsubscriptions/listbyresource
             var result = await client.EventSubscriptions.ListByResourceAsync(resourceGroupName, string.Empty, "Microsoft.EventGrid", "/topics/" + topicName, null, null, cancellationToken);
-            return result;
+//            return result;
+
+//todo: when we change this, we have to make sure the dead letter handling still works
+
+            return result.ToList();
         }
 
         public async Task<EventSubscription> Subscription_GetByIdAsync(string scope, string subscriptionName, CancellationToken cancellationToken = default)
