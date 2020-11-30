@@ -10,9 +10,9 @@ variables:
 - name: FunctionAppUrl
   value: ''
 - name: RateLimitRenewalPeriod
-  value: 10
+  value: 1
 - name: RateLimitRequests
-  value: 10
+  value: 20
 - name: DeadLetterSubscriptionName
   value: dfc-prd-dead-letter-egs
 - name: EventGridResourceGroup
