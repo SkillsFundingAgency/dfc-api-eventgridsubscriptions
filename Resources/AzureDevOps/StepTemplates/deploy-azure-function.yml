@@ -55,7 +55,7 @@ steps:
     azurePowerShellVersion: LatestVersion
 
 - task: esfadevops.Tokenization.custom-build-task.Tokenization@0
-  displayName: 'Tokenization: Transform file APIM Policy File'
+  displayName: 'Tokenization: Event Grid APIM Policy'
   inputs:
     SourcePath: '${{ parameters.APIMPolicyPath }}'
     TargetFileNames: 'ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml'
@@ -90,3 +90,18 @@ steps:
           }
       }
     azurePowerShellVersion: LatestVersion 
+
+- task: esfadevops.Tokenization.custom-build-task.Tokenization@0
+  displayName: 'Tokenization: Rate Limit APIM Policy'
+  inputs:
+    SourcePath: '${{ parameters.APIMPolicyPath }}'
+    TargetFileNames: 'ApimPolicy-RateLimit.xml'
+
+- task: AzurePowerShell@5
+  displayName: 'Apply Rate Limit APIM Policy'
+  inputs:
+    azureSubscription: '${{ parameters.AzureSubscription }}'
+    ScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSCoreScripts/Set-ApimPolicy.ps1'
+    #ScriptArguments: "-PolicyScope api -ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -ApimServiceName '${{ parameters.ApimServiceName }}' -ApiId 'composite-ui-subscriptions' -PolicyFilePath "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolices/ApimPolicy-RateLimit.xml"
+    ScriptArguments: '-PolicyScope api -ApimResourceGroup ${{ parameters.SharedResourceGroup }} -ApimServiceName ${{ parameters.ApimServiceName }} -PolicyFilePath "$(Agent.BuildDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-RateLimit.xml" -ApiId composite-ui-subscriptions'
+    azurePowerShellVersion: LatestVersion
