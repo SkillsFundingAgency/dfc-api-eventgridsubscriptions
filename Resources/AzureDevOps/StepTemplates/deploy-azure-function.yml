@@ -64,32 +64,9 @@ steps:
   displayName: 'Apply EventGrid APIM Policy'
   inputs:
     azureSubscription: '${{ parameters.AzureSubscription }}'
-    ScriptType: InlineScript
-    Inline: |
-      $context = New-AzApiManagementContext -ResourceGroupName "$(SharedResourceGroupName)" -ServiceName "$(ApimServiceName)"
-      
-      $policyFilePath = "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml"
-      
-      $apiNames = 'DFC Subscription API'
-      
-      $apiOperationNames = 'Processes an Event Grid Subscription Dead Lettered Event.'
-      
-      foreach ($apiName in $apiNames) {
-          $api = ""
-      
-          $api = Get-AzApiManagementApi -Context $Context -Name $apiName
-      
-          foreach ($apiOperationName in $apiOperationNames) {
-              $operation = ""
-      
-              $operation = Get-AzApiManagementOperation -Context $Context -ApiId $api.ApiId | where {$_.Name -eq $apiOperationName}
-      
-              Write-Output "Applying policy to API: $($api.name) Operation: $($operation.name)"
-      
-              Set-AzApiManagementPolicy -Context $Context -Format application/vnd.ms-azure-apim.policy.raw+xml -ApiId $api.ApiId -OperationId $operation.OperationId -PolicyFilePath $PolicyFilePath -Verbose
-          }
-      }
-    azurePowerShellVersion: LatestVersion 
+    ScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSCoreScripts/Set-ApimPolicy.ps1'
+    ScriptArguments: '-PolicyScope operation -ApimResourceGroup ${{ parameters.SharedResourceGroup }} -ApimServiceName ${{ parameters.ApimServiceName }} -PolicyFilePath "$(Agent.BuildDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-IsolatedFunctionAppAsEventGridWebhookEndpoint.xml" -ApiId composite-ui-subscriptions -OperationId AddDeadLetteredEvent'
+    azurePowerShellVersion: LatestVersion
 
 - task: esfadevops.Tokenization.custom-build-task.Tokenization@0
   displayName: 'Tokenization: Rate Limit APIM Policy'
@@ -102,6 +79,5 @@ steps:
   inputs:
     azureSubscription: '${{ parameters.AzureSubscription }}'
     ScriptPath: '$(Agent.BuildDirectory)/s/dfc-devops/PSCoreScripts/Set-ApimPolicy.ps1'
-    #ScriptArguments: "-PolicyScope api -ApimResourceGroup '${{ parameters.SharedResourceGroup }}' -ApimServiceName '${{ parameters.ApimServiceName }}' -ApiId 'composite-ui-subscriptions' -PolicyFilePath "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ApimPolices/ApimPolicy-RateLimit.xml"
     ScriptArguments: '-PolicyScope api -ApimResourceGroup ${{ parameters.SharedResourceGroup }} -ApimServiceName ${{ parameters.ApimServiceName }} -PolicyFilePath "$(Agent.BuildDirectory)/DFC.Api.EventGridSubscriptions.Resources.ApimPolicies/ApimPolicy-RateLimit.xml" -ApiId composite-ui-subscriptions'
     azurePowerShellVersion: LatestVersion
