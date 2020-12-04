@@ -14,6 +14,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -75,17 +76,17 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             catch (ArgumentNullException e)
             {
                 log.LogError(e.ToString());
-                return new BadRequestObjectResult(e);
+                return new StatusCodeResult((int)HttpStatusCode.BadRequest);
             }
             catch (ArgumentException e)
             {
                 log.LogError(e.ToString());
-                return new BadRequestObjectResult(e);
+                return new StatusCodeResult((int)HttpStatusCode.BadRequest);
             }
             catch (RestException e)
             {
                 log.LogError(e.ToString());
-                return new ServiceUnavailableObjectResult(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.ServiceUnavailable);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
