@@ -48,11 +48,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Act
             var result = await RunFunction(null);
 
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            var badRequestObjectResult = result as StatusCodeResult;
 
             // Assert
             Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
+            Assert.True(result is StatusCodeResult);
             Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
         }
 
@@ -65,11 +65,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Act
             var result = await RunFunction(null);
 
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            var badRequestObjectResult = result as StatusCodeResult;
 
             // Assert
             Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
+            Assert.True(result is StatusCodeResult);
             Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
         }
 
@@ -82,11 +82,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Act
             var result = await RunFunction("test-subscription");
 
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            var badRequestObjectResult = result as StatusCodeResult;
 
             // Assert
             Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
+            Assert.True(result is StatusCodeResult);
             Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
         }
 
@@ -116,11 +116,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             //Act
             var result = await RunFunction("test-subscription");
 
-            var badRequestObjectResult = result as BadRequestObjectResult;
+            var badRequestObjectResult = result as StatusCodeResult;
 
             // Assert
             Assert.IsAssignableFrom<IActionResult>(result);
-            Assert.True(result is BadRequestObjectResult);
+            Assert.True(result is StatusCodeResult);
             Assert.Equal((int?)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
         }
 
@@ -369,12 +369,10 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             context.HttpContext = A.Fake<HttpContext>();
 
             //Act
-            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
-            await result.ExecuteResultAsync(context);
+            StatusCodeResult result = (StatusCodeResult)await RunFunction("test-subscription-name");
 
             // Assert
-            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, context.HttpContext.Response.StatusCode);
-            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, (int)result.StatusCode);
+            Assert.Equal((int?)HttpStatusCode.ServiceUnavailable, result.StatusCode);
         }
 
         [Fact]
@@ -388,7 +386,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             context.HttpContext = A.Fake<HttpContext>();
 
             //Act
-            ServiceUnavailableObjectResult result = (ServiceUnavailableObjectResult)await RunFunction("test-subscription-name");
+            StatusCodeResult result = (StatusCodeResult)await RunFunction("test-subscription-name");
 
             // Assert
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await result.ExecuteResultAsync(null).ConfigureAwait(false));
@@ -402,7 +400,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.UnitTests.DFC.EventGridSubscrip
             A.CallTo(() => _request.Method).Returns("DELETE");
 
             //Act
-            BadRequestObjectResult result = (BadRequestObjectResult)await RunFunction(null);
+            StatusCodeResult result = (StatusCodeResult)await RunFunction(null);
 
             // Assert
             Assert.Equal((int?)HttpStatusCode.BadRequest, result.StatusCode);
