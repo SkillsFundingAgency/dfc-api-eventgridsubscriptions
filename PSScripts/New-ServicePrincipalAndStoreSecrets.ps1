@@ -148,11 +148,12 @@ else {
 
 }
 
-$gridTopicOwner = Get-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+$gridTopicOwner = Get-AzRoleAssignment `
     -ResourceType "Microsoft.EventGrid/topics"  `
     -ResourceName $EventGridTopicName  `
     -ResourceGroupName $EventGridResourceGroup  `
     -RoleDefinitionName "Owner" 
+Write-Verbose "$($gridTopicOwner)"
 if (!$gridTopicOwner) {
     Write-Verbose "'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName) NOT FOUND"
     Write-Verbose "Adding 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
