@@ -139,24 +139,31 @@ else {
 
 }
 
-Write-Verbose "Getting ServicePrincipal application id from KeyVault $($KeyVault.VaultName)"
+Write-Verbose "Getting ServicePrincipal application id secret from KeyVault $($KeyVault.VaultName)"
 $vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -VaultName $KeyVault.VaultName
 if (!$vaultKey){
-    Write-Verbose "Adding ServicePrincipal application id to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal application id secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal application id secret to KeyVault $($KeyVault.VaultName)"
     $SecureAppId = ConvertTo-SecureString -String $AdServicePrincipal.ApplicationId -AsPlainText -Force
     $Secret2 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -SecretValue $SecureAppId -VaultName $KeyVault.VaultName
     $Secret2.Id
-    Write-Verbose "Added ServicePrincipal application id to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Added ServicePrincipal application id secret to KeyVault $($KeyVault.VaultName)"
+else {
+    Write-Verbose "ServicePrincipal application id secret already in KeyVault $($KeyVault.VaultName)"
 }
 
-Write-Verbose "Getting ServicePrincipal tenant id from KeyVault $($KeyVault.VaultName)"
+
+Write-Verbose "Getting ServicePrincipal tenant id secret from KeyVault $($KeyVault.VaultName)"
 $vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -VaultName $KeyVault.VaultName
 IF (!$vaultKey){
-    Write-Verbose "Adding ServicePrincipal tenantId to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal tenantId secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal tenantId secret to KeyVault $($KeyVault.VaultName)"
     $SecureTenantId = ConvertTo-SecureString -String $TenantId -AsPlainText -Force
     $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
     $Secret3.Id
-    Write-Verbose "Added ServicePrincipal tenantId to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Added ServicePrincipal tenantId secret to KeyVault $($KeyVault.VaultName)"
+} else {
+    Write-Verbose "ServicePrincipal tenant id secret already in KeyVault $($KeyVault.VaultName)"
 }
 
 
