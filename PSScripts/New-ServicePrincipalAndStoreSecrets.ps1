@@ -148,7 +148,7 @@ else {
 
 }
 
-$gridTopicOwner = Get-AzRoleAssignment -ObjectId $AdServicePrincipal.ApplicationId `
+$gridTopicOwner = Get-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
     -ResourceType "Microsoft.EventGrid/topics"  `
     -ResourceName $EventGridTopicName  `
     -ResourceGroupName $EventGridResourceGroup  `
