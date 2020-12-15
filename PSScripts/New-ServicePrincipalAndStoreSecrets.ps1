@@ -148,12 +148,12 @@ else {
 
 }
 
-$gridTopicOwner = Get-AzRoleAssignment `
+$roleAssignment = Get-AzRoleAssignment `
     -ResourceType "Microsoft.EventGrid/topics"  `
     -ResourceName $EventGridTopicName  `
     -ResourceGroupName $EventGridResourceGroup  `
     -RoleDefinitionName "Owner" | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
-if (!$gridTopicOwner) {
+if (!$roleAssignment) {
     Write-Verbose "'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName) NOT FOUND"
     Write-Verbose "Adding 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
     New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId  `
@@ -163,20 +163,46 @@ if (!$gridTopicOwner) {
         -RoleDefinitionName "Owner"
     Write-Verbose "Added 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
 } else {
-    Write-Verbose "$($gridTopicOwner.DisplayName) has OWNER permissions"   
+    Write-Verbose "$($roleAssignment.DisplayName) has OWNER permissions for $($EventGridTopicName)"   
 }
 
 
-# $storageAccount = (Get-AzStorageAccount  `
-#     -ResourceGroupName $appSharedResourceGroupName  `
-#     -Name $appSharedStorageAccountName)
-# $storageid = $storageAccount.Id
-# New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
-#     -RoleDefinitionName "Storage Blob Data Contributor" `
-#     -Scope $storageid -Verbose
-# New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
-#     -RoleDefinitionName "Contributor" `
-#     -Scope $storageid -Verbose
+$storageAccount = (Get-AzStorageAccount  `
+    -ResourceGroupName $appSharedResourceGroupName  `
+    -Name $appSharedStorageAccountName)
+$storageid = $storageAccount.Id
+
+$roleAssignment = Get-AzRoleAssignment `
+    -RoleDefinitionName "Storage Blob Data Contributor" `
+    -Scope $storageid -Verbose | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
+if (!$roleAssignment) {
+    Write-Verbose "'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName) NOT FOUND"
+    Write-Verbose "Adding 'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Storage Blob Data Contributor" `
+        -Scope $storageid -Verbose
+    Write-Verbose "Added 'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+} else {
+    Write-Verbose "$($roleAssignment.DisplayName) has 'Storage Blob Data Contributor' permissions for $($appSharedStorageAccountName)"   
+}
+
+$roleAssignment = Get-AzRoleAssignment `
+    -RoleDefinitionName "Contributor" `
+    -Scope $storageid -Verbose | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
+if (!$roleAssignment) {
+    Write-Verbose "'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName) NOT FOUND"
+    Write-Verbose "Adding 'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Contributor" `
+        -Scope $storageid -Verbose
+    Write-Verbose "Added 'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+} else {
+    Write-Verbose "$($roleAssignment.DisplayName) has 'Contributor' permissions for $($appSharedStorageAccountName)"   
+}
+    
+
+
+
 
 
 $AdServicePrincipal
