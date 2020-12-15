@@ -148,7 +148,7 @@ if (!$vaultKey){
     $Secret2 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -SecretValue $SecureAppId -VaultName $KeyVault.VaultName
     $Secret2.Id
     Write-Verbose "Added ServicePrincipal application id secret to KeyVault $($KeyVault.VaultName)"
-else {
+} else {
     Write-Verbose "ServicePrincipal application id secret already in KeyVault $($KeyVault.VaultName)"
 }
 
