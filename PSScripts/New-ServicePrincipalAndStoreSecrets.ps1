@@ -148,11 +148,23 @@ else {
 
 }
 
-New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId  `
+$gridTopicOwner = Get-AzRoleAssignment -ObjectId $AdServicePrincipal.ApplicationId `
+    -ResourceType "Microsoft.EventGrid/topics"  `
+    -ResourceName $EventGridTopicName  `
+    -ResourceGroupName $EventGridResourceGroup  `
+    -RoleDefinitionName "Owner" 
+if (!$gridTopicOwner) {
+    Write-Verbose "'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName) NOT FOUND"
+    Write-Verbose "Adding 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId  `
     -ResourceType "Microsoft.EventGrid/topics"  `
     -ResourceName $EventGridTopicName  `
     -ResourceGroupName $EventGridResourceGroup  `
     -RoleDefinitionName "Owner"
+    Write-Verbose "Added 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
+}
+
+
 $storageAccount = (Get-AzStorageAccount  `
     -ResourceGroupName $appSharedResourceGroupName  `
     -Name $appSharedStorageAccountName)
