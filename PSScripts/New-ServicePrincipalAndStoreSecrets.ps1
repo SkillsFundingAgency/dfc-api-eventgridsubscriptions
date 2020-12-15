@@ -148,7 +148,11 @@ else {
 
 }
 
-New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId -ResourceType "Microsoft.EventGrid/topics" -ResourceName $EventGridTopicName -ResourceGroupName $EventGridResourceGroup -RoleDefinitionName "Owner"
+New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId  `
+    -ResourceType "Microsoft.EventGrid/topics"  `
+    -ResourceName $EventGridTopicName  `
+    -ResourceGroupName $EventGridResourceGroup  `
+    -RoleDefinitionName "Owner"
 $storageAccount = (Get-AzStorageAccount  `
     -ResourceGroupName $appSharedResourceGroupName  `
     -Name $appSharedStorageAccountName)
