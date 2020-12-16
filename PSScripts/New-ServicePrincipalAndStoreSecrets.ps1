@@ -129,7 +129,7 @@ if(!$AdServicePrincipal) {
         throw "Error creating Service Principal $ServicePrincipalName)"
     }
 
-    Write-Verbose "Adding ServicePrincipal secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-secret secret to KeyVault $($KeyVault.VaultName)"
     $Secret1 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-secret" -SecretValue $SecureStringPassword -VaultName $KeyVault.VaultName
     $Secret1.Id
 }
@@ -139,31 +139,31 @@ else {
 
 }
 
-Write-Verbose "Getting ServicePrincipal application id secret from KeyVault $($KeyVault.VaultName)"
+Write-Verbose "Getting ServicePrincipal $($RepoName)-appregistration-id secret from KeyVault $($KeyVault.VaultName)"
 $vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -VaultName $KeyVault.VaultName
 if (!$vaultKey){
-    Write-Verbose "ServicePrincipal application id secret not found in KeyVault $($KeyVault.VaultName)"
-    Write-Verbose "Adding ServicePrincipal application id secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-id secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-id secret to KeyVault $($KeyVault.VaultName)"
     $SecureAppId = ConvertTo-SecureString -String $AdServicePrincipal.ApplicationId -AsPlainText -Force
     $Secret2 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -SecretValue $SecureAppId -VaultName $KeyVault.VaultName
     $Secret2.Id
-    Write-Verbose "Added ServicePrincipal application id secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Added ServicePrincipal $($RepoName)-appregistration-id secret to KeyVault $($KeyVault.VaultName)"
 } else {
-    Write-Verbose "ServicePrincipal application id secret already in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-id secret already in KeyVault $($KeyVault.VaultName)"
 }
 
 
-Write-Verbose "Getting ServicePrincipal tenant id secret from KeyVault $($KeyVault.VaultName)"
+Write-Verbose "Getting ServicePrincipal $($RepoName)-appregistration-tenant-id secret from KeyVault $($KeyVault.VaultName)"
 $vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -VaultName $KeyVault.VaultName
 IF (!$vaultKey){
-    Write-Verbose "ServicePrincipal tenantId secret not found in KeyVault $($KeyVault.VaultName)"
-    Write-Verbose "Adding ServicePrincipal tenantId secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-tenant-id secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-tenant-id secret to KeyVault $($KeyVault.VaultName)"
     $SecureTenantId = ConvertTo-SecureString -String $TenantId -AsPlainText -Force
     $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
     $Secret3.Id
-    Write-Verbose "Added ServicePrincipal tenantId secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Added ServicePrincipal $($RepoName)-appregistration-tenant-id secret to KeyVault $($KeyVault.VaultName)"
 } else {
-    Write-Verbose "ServicePrincipal tenant id secret already in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-tenant-id secret already in KeyVault $($KeyVault.VaultName)"
 }
 
 
