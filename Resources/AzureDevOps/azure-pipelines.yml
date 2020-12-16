@@ -96,7 +96,7 @@ stages:
         DotNetCoreVersion: '3.1.100'
 
 - stage: DeployToDevEventGridSubscriptions
-  condition: succeeded()
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
   displayName: Deploy environment to DEV_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -139,7 +139,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployDEVDeadLetter
-  condition: eq(dependencies.DeployToDevEventGridSubscriptions.result,'Succeeded')
+  condition: and(eq(dependencies.DeployToDevEventGridSubscriptions.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
   displayName: Deploy dead letter subscription to DEV_EventGridSubscriptions
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
