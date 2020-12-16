@@ -71,27 +71,30 @@ $AzureDevOpsServicePrincipal = Get-AzADServicePrincipal -ApplicationId $Context.
 # Comment above line and uncomment line below to test localy with your user account
 #$AzureDevOpsServicePrincipal = Get-AzADUser -UserPrincipalName $Context.Account.Id
 
+# Run checks to confirm that vault exists and AzureDevops SP has access to the vault
+$KeyVault = Get-AzKeyVault -VaultName $KeyVaultName
+if (!$KeyVault) {
+
+    throw "KeyVault $KeyVaultName doesn't exist, nowhere to store secret"
+
+}
+else {
+
+        Write-Verbose "Checking user access policy for user $($AzureDevOpsServicePrincipal.Id) ..."
+        $UserAccessPolicy = $KeyVault.AccessPolicies | Where-Object { $_.ObjectId -eq $AzureDevOpsServicePrincipal.Id }
+        if (!$UserAccessPolicy -or !($UserAccessPolicy.PermissionsToSecrets -contains "Set")) {
+            throw "Service Principal $($AzureDevOpsServicePrincipal.Id) doesn't have Set permission on KeyVault $($KeyVault.VaultName)"
+        }
+}
+
+
+
 $AdServicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
 if(!$AdServicePrincipal) {
     $Password = New-Password -Length 24
     $SecureStringPassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
     #Write-Verbose "Password $($Password)"
     $Credentials = New-Object -TypeName Microsoft.Azure.Commands.ActiveDirectory.PSADPasswordCredential -Property @{StartDate=Get-Date; EndDate=Get-Date -Year 2024; Password=$Password}
-    $KeyVault = Get-AzKeyVault -VaultName $KeyVaultName
-    if (!$KeyVault) {
-
-        throw "KeyVault $KeyVaultName doesn't exist, nowhere to store secret"
-
-    }
-    else {
-
-            Write-Verbose "Checking user access policy for user $($AzureDevOpsServicePrincipal.Id) ..."
-            $UserAccessPolicy = $KeyVault.AccessPolicies | Where-Object { $_.ObjectId -eq $AzureDevOpsServicePrincipal.Id }
-            if (!$UserAccessPolicy -or !($UserAccessPolicy.PermissionsToSecrets -contains "Set")) {
-                throw "Service Principal $($AzureDevOpsServicePrincipal.Id) doesn't have Set permission on KeyVault $($KeyVault.VaultName)"
-            }
-    }
-
     try {
         Write-Verbose "Registering service principal ..."
         $AdServicePrincipal = New-AzADServicePrincipal -PasswordCredentials $Credentials -DisplayName $ServicePrincipalName -Verbose -ErrorAction Stop 
@@ -126,34 +129,99 @@ if(!$AdServicePrincipal) {
         throw "Error creating Service Principal $ServicePrincipalName)"
     }
 
-    Write-Verbose "Adding ServicePrincipal secret to KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-secret secret to KeyVault $($KeyVault.VaultName)"
     $Secret1 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-secret" -SecretValue $SecureStringPassword -VaultName $KeyVault.VaultName
     $Secret1.Id
-    Write-Verbose "Adding ServicePrincipal application id to KeyVault $($KeyVault.VaultName)"
-    $SecureAppId = ConvertTo-SecureString -String $AdServicePrincipal.ApplicationId -AsPlainText -Force
-    $Secret2 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -SecretValue $SecureAppId -VaultName $KeyVault.VaultName
-    $Secret2.Id
-    Write-Verbose "Adding ServicePrincipal tenantId to KeyVault $($KeyVault.VaultName)"
-    $SecureTenantId = ConvertTo-SecureString -String $TenantId -AsPlainText -Force
-    $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
-    $Secret3.Id
-    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId -ResourceType "Microsoft.EventGrid/topics" -ResourceName $EventGridTopicName -ResourceGroupName $EventGridResourceGroup -RoleDefinitionName "Owner"
-
-    $storageAccount = (Get-AzStorageAccount  `
-      -ResourceGroupName $appSharedResourceGroupName  `
-      -Name $appSharedStorageAccountName)
-    $storageid = $storageAccount.Id
-    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
-        -RoleDefinitionName "Storage Blob Data Contributor" `
-        -Scope $storageid -Verbose
-    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
-        -RoleDefinitionName "Contributor" `
-        -Scope $storageid -Verbose
-    
 }
 else {
 
-    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal, no action"
+    Write-Verbose "$($AdServicePrincipal.ServicePrincipalNames -join ",") already registered as AD Service Principal"
 
 }
+
+Write-Verbose "Getting ServicePrincipal $($RepoName)-appregistration-id secret from KeyVault $($KeyVault.VaultName)"
+$vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -VaultName $KeyVault.VaultName
+if (!$vaultKey){
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-id secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-id secret to KeyVault $($KeyVault.VaultName)"
+    $SecureAppId = ConvertTo-SecureString -String $AdServicePrincipal.ApplicationId -AsPlainText -Force
+    $Secret2 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-id" -SecretValue $SecureAppId -VaultName $KeyVault.VaultName
+    $Secret2.Id
+    Write-Verbose "Added ServicePrincipal $($RepoName)-appregistration-id secret to KeyVault $($KeyVault.VaultName)"
+} else {
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-id secret already in KeyVault $($KeyVault.VaultName)"
+}
+
+
+Write-Verbose "Getting ServicePrincipal $($RepoName)-appregistration-tenant-id secret from KeyVault $($KeyVault.VaultName)"
+$vaultKey = Get-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -VaultName $KeyVault.VaultName
+IF (!$vaultKey){
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-tenant-id secret not found in KeyVault $($KeyVault.VaultName)"
+    Write-Verbose "Adding ServicePrincipal $($RepoName)-appregistration-tenant-id secret to KeyVault $($KeyVault.VaultName)"
+    $SecureTenantId = ConvertTo-SecureString -String $TenantId -AsPlainText -Force
+    $Secret3 = Set-AzKeyVaultSecret -Name "$($RepoName)-appregistration-tenant-id" -SecretValue $SecureTenantId -VaultName $KeyVault.VaultName
+    $Secret3.Id
+    Write-Verbose "Added ServicePrincipal $($RepoName)-appregistration-tenant-id secret to KeyVault $($KeyVault.VaultName)"
+} else {
+    Write-Verbose "ServicePrincipal $($RepoName)-appregistration-tenant-id secret already in KeyVault $($KeyVault.VaultName)"
+}
+
+
+$roleAssignment = Get-AzRoleAssignment `
+    -ResourceType "Microsoft.EventGrid/topics"  `
+    -ResourceName $EventGridTopicName  `
+    -ResourceGroupName $EventGridResourceGroup  `
+    -RoleDefinitionName "Owner" | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
+if (!$roleAssignment) {
+    Write-Verbose "'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName) NOT FOUND"
+    Write-Verbose "Adding 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId  `
+        -ResourceType "Microsoft.EventGrid/topics"  `
+        -ResourceName $EventGridTopicName  `
+        -ResourceGroupName $EventGridResourceGroup  `
+        -RoleDefinitionName "Owner"
+    Write-Verbose "Added 'Owner' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($EventGridTopicName)"
+} else {
+    Write-Verbose "$($roleAssignment.DisplayName) has OWNER permissions for $($EventGridTopicName)"   
+}
+
+
+$storageAccount = (Get-AzStorageAccount  `
+    -ResourceGroupName $appSharedResourceGroupName  `
+    -Name $appSharedStorageAccountName)
+$storageid = $storageAccount.Id
+
+$roleAssignment = Get-AzRoleAssignment `
+    -RoleDefinitionName "Storage Blob Data Contributor" `
+    -Scope $storageid -Verbose | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
+if (!$roleAssignment) {
+    Write-Verbose "'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName) NOT FOUND"
+    Write-Verbose "Adding 'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Storage Blob Data Contributor" `
+        -Scope $storageid -Verbose
+    Write-Verbose "Added 'Storage Blob Data Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+} else {
+    Write-Verbose "$($roleAssignment.DisplayName) has 'Storage Blob Data Contributor' permissions for $($appSharedStorageAccountName)"   
+}
+
+$roleAssignment = Get-AzRoleAssignment `
+    -RoleDefinitionName "Contributor" `
+    -Scope $storageid -Verbose | Where-Object {$_.DisplayName -eq "$($AdServicePrincipal.DisplayName)"}
+if (!$roleAssignment) {
+    Write-Verbose "'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName) NOT FOUND"
+    Write-Verbose "Adding 'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+    New-AzRoleAssignment -ApplicationId $AdServicePrincipal.ApplicationId `
+        -RoleDefinitionName "Contributor" `
+        -Scope $storageid -Verbose
+    Write-Verbose "Added 'Contributor' Role assignment to $($AdServicePrincipal.ServicePrincipalNames) for $($appSharedStorageAccountName)"
+} else {
+    Write-Verbose "$($roleAssignment.DisplayName) has 'Contributor' permissions for $($appSharedStorageAccountName)"   
+}
+    
+
+
+
+
+
 $AdServicePrincipal
