@@ -45,7 +45,7 @@ try {
     $storageid = $storageAccount.Id
     New-AzStorageContainer -Name $DeadLetterBlobContainerName  `
       -Context $ctx  `
-      -Permission blob  `
+      -Permission off  `
       -Verbose
     New-AzEventGridSubscription  `
       -ResourceId $storageid `
