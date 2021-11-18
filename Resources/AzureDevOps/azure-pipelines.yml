@@ -95,9 +95,9 @@ stages:
         TestSuffix: 'UnitTests'
         DotNetCoreVersion: '3.1.100'
 
-- stage: DeployToLabEventGridSubscriptions
+- stage: DeployToLabEventGridSubscription
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
-  displayName: Deploy environment to LAB_EventGridSubscriptions
+  displayName: Deploy environment to LAB_EventGridSubscription
   variables:
   - group: dfc-shared-all
   - group: dfc-shared-lab
@@ -119,7 +119,7 @@ stages:
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
       FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-lab-api-eventgridsubscriptions-fa'
-      EnvironmentName: LAB_EventGridSubscriptions
+      EnvironmentName: LAB_EventGridSubscription
       DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)
       ApimProductId: "$(ApimProductId)"
       ApimLoggerName: "$(ApimLoggerName)"
@@ -139,9 +139,9 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployLABDeadLetter
-  condition: and(eq(dependencies.DeployToLabEventGridSubscriptions.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
-  displayName: Deploy dead letter subscription to LAB_EventGridSubscriptions
-  dependsOn: DeployToLabEventGridSubscriptions
+  condition: and(eq(dependencies.DeployToLabEventGridSubscription.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  displayName: Deploy dead letter subscription to LAB_EventGridSubscription
+  dependsOn: DeployToLabEventGridSubscription
   variables:
   - group: dfc-app-shared-lab
   - group: dfc-shared-lab
