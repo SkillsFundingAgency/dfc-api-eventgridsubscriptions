@@ -119,7 +119,7 @@ stages:
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
       FunctionAppDomain: "$(FunctionAppDomain)"
       FunctionAppName: 'dfc-lab-api-eventgridsubscriptions-fa'
-      EnvironmentName: LAB_EventGridSubscriptions
+      EnvironmentName: LAB_EventGridSubscription
       DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)
       ApimProductId: "$(ApimProductId)"
       ApimLoggerName: "$(ApimLoggerName)"
