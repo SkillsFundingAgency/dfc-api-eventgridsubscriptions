@@ -36,6 +36,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             log.LogInformation($"C# HTTP trigger function begun");
             string response = string.Empty;
 
+            if (req.Content == null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+
             string requestContent = await req.Content.ReadAsStringAsync().ConfigureAwait(false);
             log.LogInformation($"Received events: {requestContent}");
 
