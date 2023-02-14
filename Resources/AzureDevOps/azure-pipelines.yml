@@ -95,7 +95,7 @@ stages:
         TestSuffix: 'UnitTests'
 
 - stage: DeployToLabEventGridSubscription
-  condition: and(succeeded())
+  condition: succeeded()
   displayName: Deploy environment to LAB_EventGridSubscription
   variables:
   - group: dfc-shared-all
