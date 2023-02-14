@@ -93,7 +93,6 @@ stages:
         BuildConfiguration: 'release'
         PublishWebApp: true
         TestSuffix: 'UnitTests'
-        DotNetCoreVersion: '3.1.100'
 
 - stage: DeployToLabEventGridSubscription
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
