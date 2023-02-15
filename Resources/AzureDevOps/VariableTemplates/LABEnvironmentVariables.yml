@@ -1,25 +1,25 @@
 variables:
 - name: ReleaseEnvironmentName
-  value: PP
+  value: LAB
 - name: aspTier
   value: Standard
 - name: aspInstances
   value: 2
 - name: aspSize
-  value: 1
+  value: 2
 - name: FunctionAppUrl
   value: ''
+- name: DeadLetterSubscriptionName
+  value: dfc-lab-dead-letter-egs
 - name: RateLimitRenewalPeriod
   value: 1
 - name: RateLimitRequests
   value: 20
-- name: DeadLetterSubscriptionName
-  value: dfc-pp-dead-letter-egs
 - name: EventGridResourceGroup
-  value: dfc-pp-stax-editor-rg
+  value: dfc-lab-stax-editor-rg
 - name: EventGridTopicName
-  value: dfc-pp-stax-egt
+  value: dfc-lab-stax-egt
 - name: ServicePrincipalName
-  value: dfc-pp-api-eventgridsubscriptions
+  value: dfc-lab-api-eventgridsubscriptions
 - name: DeadLetterSubscriptionEndPoint
   value: $(ApimProxyAddress)/composite-ui/subscription/api/DeadLetter/api/updates?subscription-key=$(ApimCompositeKey)
