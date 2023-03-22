@@ -138,7 +138,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployLABDeadLetter
-  condition: eq(dependencies.DeployToLabEventGridSubscription.result,'Succeeded')
+  condition: succeeded()
   displayName: Deploy dead letter subscription to LAB_EventGridSubscription
   dependsOn: DeployToLabEventGridSubscription
   variables:
@@ -161,7 +161,7 @@ stages:
           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose        
 
 - stage: DeployToDevEventGridSubscriptions
-  condition: eq(dependencies.DeployLABDeadLetter.result,'Succeeded')
+  condition: succeeded()
   displayName: Deploy environment to DEV_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -204,7 +204,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
 
 - stage: DeployDEVDeadLetter
-  condition: eq(dependencies.DeployToDevEventGridSubscriptions.result,'Succeeded')
+  condition: succeeded()
   displayName: Deploy dead letter subscription to DEV_EventGridSubscriptions
   dependsOn: DeployToDevEventGridSubscriptions
   variables:
@@ -227,7 +227,7 @@ stages:
           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToSITEventGridSubscriptions
-  condition: and(eq(dependencies.DeployDEVDeadLetter.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  condition: succeeded()
   displayName: Deploy environment to SIT_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -270,7 +270,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
       
 - stage: DeploySITDeadLetter
-  condition: and(eq(dependencies.DeployToSitEventGridSubscriptions.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  condition: succeeded()
   displayName: Deploy dead letter subscription to SIT_EventGridSubscriptions
   dependsOn: DeployToSITEventGridSubscriptions
   variables:
@@ -293,7 +293,7 @@ stages:
           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToPPEventGridSubscriptions
-  condition: and(eq(dependencies.Build.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: succeeded()
   displayName: Deploy environment to PP_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -334,7 +334,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
                 
 - stage: DeployPPDeadLetter
-  condition: and(eq(dependencies.DeployToPPEventGridSubscriptions.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: succeeded()
   displayName: Deploy dead letter subscription to PP_EventGridSubscriptions
   dependsOn: DeployToPPEventGridSubscriptions
   variables:
@@ -357,7 +357,7 @@ stages:
           -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToPRDEventGridSubscriptions
-  condition: and(eq(dependencies.DeployPPDeadLetter.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: succeeded()
   displayName: Deploy environment to PRD_EventGridSubscriptions
   variables:
   - group: dfc-shared-all
@@ -398,7 +398,7 @@ stages:
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
                 
 - stage: DeployPRDDeadLetter
-  condition: and(eq(dependencies.DeployToPRDEventGridSubscriptions.result,'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: succeeded()
   displayName: Deploy dead letter subscription to PRD_EventGridSubscriptions
   dependsOn: DeployToPRDEventGridSubscriptions
   variables:
