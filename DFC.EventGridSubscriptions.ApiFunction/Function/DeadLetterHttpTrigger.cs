@@ -36,6 +36,11 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             log.LogInformation($"C# HTTP trigger function begun");
             string response = string.Empty;
 
+            if (req.Content == null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+
             string requestContent = await req.Content.ReadAsStringAsync().ConfigureAwait(false);
             log.LogInformation($"Received events: {requestContent}");
 
@@ -47,9 +52,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
             {
                 if (eventGridEvent.Data.GetType() == typeof(SubscriptionValidationEventData))
                 {
-                    var eventData = eventGridEvent.Data as SubscriptionValidationEventData;
-
-                    if (eventData == null)
+                    if (eventGridEvent.Data is not SubscriptionValidationEventData eventData)
                     {
                         throw new InvalidDataException($"{nameof(SubscriptionValidationEventData)} in EventGridEvent {eventGridEvent.Id} is null");
                     }
@@ -73,9 +76,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                         throw new ArgumentException(nameof(options.CurrentValue.DeadLetterBlobContainerName));
                     }
 
-                    var eventData = eventGridEvent.Data as StorageBlobCreatedEventData;
-
-                    if (eventData == null)
+                    if (eventGridEvent.Data is not StorageBlobCreatedEventData eventData)
                     {
                         throw new InvalidDataException($"{nameof(StorageBlobCreatedEventData)} in EventGridEvent {eventGridEvent.Id} is null");
                     }
@@ -111,10 +112,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
 
         private static void Initialise(HttpRequestMessage req)
         {
-            if (Activity.Current == null)
-            {
-                Activity.Current = new Activity($"{nameof(DeadLetterHttpTrigger)}").Start();
-            }
+            Activity.Current ??= new Activity($"{nameof(DeadLetterHttpTrigger)}").Start();
 
             if (req == null)
             {

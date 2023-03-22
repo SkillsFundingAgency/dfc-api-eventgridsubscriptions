@@ -3,7 +3,7 @@ using DFC.EventGridSubscriptions.Services.Interface;
 using Microsoft.Azure.Management.EventGrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Identity.Client;
 using Microsoft.Rest;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -43,17 +43,30 @@ namespace DFC.EventGridSubscriptions.Services
 
         private async Task<string> GetAuthorizationHeaderAsync()
         {
-            ClientCredential cc = new ClientCredential(configuration["dfc-api-eventgridsubscriptions-appregistration-id"], configuration["dfc-api-eventgridsubscriptions-appregistration-secret"]);
-            var context = new AuthenticationContext("https://login.windows.net/" + configuration["dfc-api-eventgridsubscriptions-appregistration-tenant-id"]);
-            var result = await context.AcquireTokenAsync("https://management.azure.com/", cc).ConfigureAwait(false);
+            var app = ConfidentialClientApplicationBuilder
+                .Create(configuration["dfc-api-eventgridsubscriptions-appregistration-id"])
+                .WithClientSecret(configuration["dfc-api-eventgridsubscriptions-appregistration-secret"])
+                .WithAuthority(new Uri("https://login.windows.net/" + configuration["dfc-api-eventgridsubscriptions-appregistration-tenant-id"]))
+                .Build();
 
-            if (result == null)
+            try
+            {
+                var token = await app.AcquireTokenForClient(new string[] { "https://management.azure.net/.default" })
+                    .ExecuteAsync();
+                return token.AccessToken;
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                throw new MsalUiRequiredException(ex.ErrorCode, "The application doesn't have sufficient permissions.");
+            }
+            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+            {
+                throw new MsalServiceException(ex.ErrorCode, "Invalid scope. The scope has to be in the form \"https://resourceurl/.default\"");
+            }
+            catch (InvalidOperationException)
             {
                 throw new InvalidOperationException("Failed to obtain the JWT token. Please verify the values for your applicationId, Password, and Tenant.");
             }
-
-            string token = result.AccessToken;
-            return token;
         }
     }
 }

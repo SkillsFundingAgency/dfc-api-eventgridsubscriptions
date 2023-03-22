@@ -34,7 +34,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
 
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(GetCustomSettingsPath())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
@@ -47,39 +47,39 @@ namespace DFC.EventGridSubscriptions.ApiFunction.StartUp
                .Configure<IConfiguration>((settings, configuration) => { configuration.GetSection("AdvancedFilterOptions").Bind(settings); });
 
             builder.Services.AddKeyVaultClient($"https://{config["keyvault_name"]}.vault.azure.net");
-            config = configBuilder.AddKeyVaultConfigurationProvider(config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>(), builder.Services.BuildServiceProvider()).Build();
+            var keyVaultKeys = config.GetSection("KeyVaultOptions:ApplicationKeyVaultKeys").Get<List<string>>() ?? throw new Exception("ApplicaionKeyVaultKeys not found");
+            config = configBuilder.AddKeyVaultConfigurationProvider(keyVaultKeys, builder.Services.BuildServiceProvider()).Build();
 
             builder.Services.AddSingleton<IConfiguration>(config);
             builder.Services.AddTransient<ISubscriptionService, SubscriptionService>();
             builder.Services.AddEventGridManagementClient();
 
-            var cosmosDbConnectionEventGridSubscriptions = config.GetSection("Configuration:CosmosDbConnections:EventGridSubscriptions").Get<CosmosDbConnection>();
+            var cosmosDbConnectionEventGridSubscriptions = config.GetSection("Configuration:CosmosDbConnections:EventGridSubscriptions").Get<CosmosDbConnection>() ?? throw new Exception("CosmosDbConnection not found");
             builder.Services.AddDocumentServices<SubscriptionModel>(cosmosDbConnectionEventGridSubscriptions, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT");
         }
 
         private static string GetCustomSettingsPath()
         {
-            var home = Environment.GetEnvironmentVariable("HOME");
-            string? path;
-            if (home != null)
-            {
-                // We're on Azure
-                path = Path.Combine(home, "site", "wwwroot");
-            }
-            else
-            {
-                // Running locally
-                path = new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath;
+            var home = Environment.GetEnvironmentVariable("HOME") ?? string.Empty;
+            string? path = Path.Combine(home, "site", "wwwroot");
 
-                if (!string.IsNullOrEmpty(path))
-                {
-                    path = Path.GetDirectoryName(path);
-                    DirectoryInfo parentDir = Directory.GetParent(path);
-                    path = parentDir.FullName;
-                }
+            if (Directory.Exists(path))
+            {
+                return path;
             }
 
-            return path ?? string.Empty;
+            path = new Uri(Assembly.GetExecutingAssembly()?.Location!)?.LocalPath;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                return path ?? throw new Exception("Path for settings could not be determined");
+            }
+
+            path = Path.GetDirectoryName(path) ?? string.Empty;
+            DirectoryInfo? parentDir = Directory.GetParent(path);
+            path = parentDir?.FullName;
+
+            return path ?? throw new Exception("Path for settings could not be determined");
         }
     }
 }
