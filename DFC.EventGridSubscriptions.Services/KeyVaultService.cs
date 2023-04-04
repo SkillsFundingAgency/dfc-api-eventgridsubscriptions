@@ -22,7 +22,7 @@ namespace DFC.EventGridSubscriptions.Services
             var client = new SecretClient(new Uri(keyVaultAddress), new DefaultAzureCredential());
             var secret = await client.GetSecretAsync(keyVaultKey);
 
-            return secret.Value.ToString();
+            return secret.Value.Value;
         }
     }
 }
