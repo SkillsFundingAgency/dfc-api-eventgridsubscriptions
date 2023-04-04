@@ -51,7 +51,7 @@ namespace DFC.EventGridSubscriptions.Services
 
             try
             {
-                var token = await app.AcquireTokenForClient(new string[] { "https://management.azure.net/.default" })
+                var token = await app.AcquireTokenForClient(new string[] { ".default" })
                     .ExecuteAsync();
                 return token.AccessToken;
             }
