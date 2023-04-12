@@ -1,6 +1,7 @@
-﻿using DFC.EventGridSubscriptions.Services.Interface;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using DFC.EventGridSubscriptions.Services.Interface;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -18,11 +19,10 @@ namespace DFC.EventGridSubscriptions.Services
 
         public async Task<string> GetSecretAsync(string keyVaultKey)
         {
-            var azureServiceTokenProvider1 = new AzureServiceTokenProvider();
-            var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider1.KeyVaultTokenCallback));
-            var secret = await kv.GetSecretAsync(keyVaultAddress, keyVaultKey);
+            var client = new SecretClient(new Uri(keyVaultAddress), new DefaultAzureCredential());
+            var secret = await client.GetSecretAsync(keyVaultKey);
 
-            return secret.Value;
+            return secret.Value.Value;
         }
     }
 }

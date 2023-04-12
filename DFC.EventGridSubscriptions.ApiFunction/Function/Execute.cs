@@ -104,9 +104,7 @@ namespace DFC.EventGridSubscriptions.ApiFunction
                 var content = await stream.ReadToEndAsync().ConfigureAwait(false);
 
                 //Extract Request Body and Parse To Class
-                SubscriptionSettings subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionSettings>(content);
-
-                return subscriptionRequest;
+                return JsonConvert.DeserializeObject<SubscriptionSettings>(content) ?? throw new Exception("GetBodyParametersAsync body is null");
             }
         }
 
