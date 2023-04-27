@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "appInsightsName":{
+            "type": "string"
+        },
         "Environment": {
             "type": "string"
         },
@@ -65,7 +68,7 @@
         "appServicePlanResourceGroup": "[concat(variables('resourcePrefix'),'-rg')]",
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
         "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
-        "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
+        "AppServiceAppInsightsName": "[parameters('appInsightsName')]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
         "ApiName": "[concat(parameters('ApimProductInstanceName'), '-', parameters('ApiName'))]",
         "cosmosDbCollectionPartitionKey": "/PartitionKey",

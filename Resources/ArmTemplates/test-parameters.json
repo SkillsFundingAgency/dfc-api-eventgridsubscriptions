@@ -55,6 +55,9 @@
         },
         "ApimProductInstanceName": {
             "value": "composite-ui"
+        },
+        "appInsightsName": {
+            "value": "dfc-foo-shared-ai"
         }
     }
 }
