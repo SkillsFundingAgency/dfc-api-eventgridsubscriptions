@@ -18,7 +18,7 @@
             "value": "__sharedResourceGroup__"
         },
         "aspInstances": {
-            "value": __aspInstances__
+            "value": "__aspInstances__"
         },
         "aspTier": {
             "value": "__aspTier__"
