@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "appInsightsInstrumentationKey": {
+            "type": "string"
+        },
         "Environment": {
             "type": "string"
         },
@@ -65,7 +68,7 @@
         "appServicePlanResourceGroup": "[concat(variables('resourcePrefix'),'-rg')]",
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
         "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
-        "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
+        "AppServiceAppInsightsInstrumentationKey": "[parameters('appInsightsInstrumentationKey')]",
         "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
         "ApiName": "[concat(parameters('ApimProductInstanceName'), '-', parameters('ApiName'))]",
         "cosmosDbCollectionPartitionKey": "/PartitionKey",
@@ -132,27 +135,7 @@
       },
       "dependsOn": [
       ]
-    },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "[variables('AppServiceAppInsightsName')]",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('BuildingBlocksDfcBaseUrl'), 'application-insights.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appInsightsName": {
-                        "value": "[variables('AppServiceAppInsightsName')]"
-                    },
-                    "attachedService": {
-                        "value": ""
-                    }
-                }
-            }
-        },
+    },        
         {
             "apiVersion": "2017-05-10",
             "name": "[variables('appServicePlanName')]",
@@ -218,7 +201,7 @@
                         "value": [
                             {
                                 "name": "FUNCTIONS_EXTENSION_VERSION",
-                                "value": "~4"
+                                "value": "~3"
                             },
                             {
                                 "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -234,7 +217,7 @@
                             },
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference(variables('AppServiceAppInsightsName')).outputs.InstrumentationKey.value]"
+                                "value": "[variables('AppServiceAppInsightsInstrumentationKey')]"
                             },
                             {
                                 "name": "AzureWebJobsStorage",
@@ -325,8 +308,7 @@
                 }
             },
             "dependsOn": [
-                "[variables('appServicePlanName')]",
-                "[variables('AppServiceAppInsightsName')]"
+                "[variables('appServicePlanName')]"
             ]
         }
     ],
