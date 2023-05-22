@@ -22,8 +22,8 @@ pool:
 trigger: 
   branches:
     include: 
-    - dev
-    - master
+#    - dev
+#    - master
 
 pr:
   branches:
