@@ -22,14 +22,16 @@ pool:
 trigger: 
   branches:
     include: 
-#    - dev
-#    - master
+    - dev
+    - master
+    - monitoring
 
 pr:
   branches:
     include: 
     - dev
     - master
+    - monitoring
 
 stages:
 - stage: Build
