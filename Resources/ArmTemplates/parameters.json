@@ -55,6 +55,9 @@
         },
         "ApimProductInstanceName": {
             "value": "__ApimProductInstanceName__"
+        },
+        "appInsightsInstrumentationKey": {
+            "value": "__appInsightsInstrumentationKey__" 
         }
     }
 }
