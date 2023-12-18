@@ -55,6 +55,12 @@
         },
         "ApimProductInstanceName": {
             "value": "__ApimProductInstanceName__"
+        },
+        "workspaceName": {
+            "value": "__sharedLogAnalyticsWorkspace__"
+        },
+        "workspaceResourceGroup": {
+            "value": "__sharedLogAnalyticsResourceGroup__"
         }
     }
 }

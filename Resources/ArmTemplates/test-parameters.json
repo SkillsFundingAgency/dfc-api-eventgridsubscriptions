@@ -55,6 +55,12 @@
         },
         "ApimProductInstanceName": {
             "value": "composite-ui"
+        },
+        "workspaceName": {
+            "value": "aTestLogAnalyticsAccount"
+        },
+        "workspaceResourceGroup": {
+            "value": "aResourceGroup"
         }
     }
 }
