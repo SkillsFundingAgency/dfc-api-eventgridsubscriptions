@@ -167,38 +167,6 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "[variables('appServicePlanName')]",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('buildingBlocksDfcBaseUrl'), 'app-service-plan.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appServicePlanName": {
-                        "value": "[variables('appServicePlanName')]"
-                    },
-                    "aseHostingEnvironmentName": {
-                        "value": "[parameters('aseHostingEnvironmentName')]"
-                    },
-                    "aseResourceGroup": {
-                        "value": "[parameters('aseResourceGroup')]"
-                    },
-                    "aspSize": {
-                        "value": "[parameters('aspSize')]"
-                    },
-                    "aspInstances": {
-                        "value": "[parameters('aspInstances')]"
-                    },
-                    "nonASETier": {
-                        "value": "[parameters('aspTier')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
             "name": "[variables('FunctionAppName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -337,7 +305,6 @@
                 }
             },
             "dependsOn": [
-                "[variables('appServicePlanName')]",
                 "[variables('AppServiceAppInsightsName')]"
             ]
         }
