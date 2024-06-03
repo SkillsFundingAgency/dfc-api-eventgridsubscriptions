@@ -11,20 +11,11 @@
         "appSharedStorageAccountName": {
             "value": "__appSharedStorageAccountName__"
         },
-        "aseHostingEnvironmentName": {
-            "value": "__AseServiceName__"
+        "appServicePlanSuffix": {
+            "value": "__AppServicePlanSuffix__"
         },
-        "aseResourceGroup": {
-            "value": "__sharedResourceGroup__"
-        },
-        "aspInstances": {
-            "value": __aspInstances__
-        },
-        "aspTier": {
-            "value": "__aspTier__"
-        },
-        "aspSize": {
-            "value": "__aspSize__"
+        "functionAppName": {
+            "value": "__FunctionAppName__"
         },
         "sharedKeyVaultName": {
             "value": "__sharedKeyVaultName__"
