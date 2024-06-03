@@ -9,6 +9,8 @@ variables:
   value: 2
 - name: FunctionAppUrl
   value: ''
+- name: FunctionAppName
+  value: dfc-lab-api-eventgridsubscriptions-fa
 - name: DeadLetterSubscriptionName
   value: dfc-lab-dead-letter-egs
 - name: RateLimitRenewalPeriod

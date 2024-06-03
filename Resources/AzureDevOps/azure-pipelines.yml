@@ -19,15 +19,15 @@ pool:
   - msbuild
   - visualstudio
 
-trigger: 
+trigger:
   branches:
-    include: 
+    include:
     - dev
     - master
 
 pr:
   branches:
-    include: 
+    include:
     - dev
     - master
 
@@ -132,7 +132,7 @@ stages:
       # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
       # The top level -`s here defines an array of "something"
       # The inner level -'s defines an array of mappings.
-      Apis: 
+      Apis:
         -
           - name: subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
@@ -158,7 +158,7 @@ stages:
           -appSharedStorageAccountName "$(appSharedStorageAccountName)"  `
           -DeadLetterBlobContainerName "$(DeadLetterBlobContainerName)"  `
           -DeadLetterSubscriptionName "$(DeadLetterSubscriptionName)"  `
-          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose        
+          -DeadLetterSubscriptionEndPoint "$(DeadLetterSubscriptionEndPoint)" -Verbose
 
 - stage: DeployToDevEventGridSubscriptions
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
@@ -199,7 +199,7 @@ stages:
       # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
       # The top level -`s here defines an array of "something"
       # The inner level -'s defines an array of mappings.
-      Apis: 
+      Apis:
         -
           - name: subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
@@ -267,11 +267,11 @@ stages:
       # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
       # The top level -`s here defines an array of "something"
       # The inner level -'s defines an array of mappings.
-      Apis: 
+      Apis:
         -
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
-      
+
 - stage: DeploySITDeadLetter
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
@@ -320,7 +320,7 @@ stages:
       PackageFile:  "$(Pipeline.Workspace)/DFC.EventGridSubscriptions.ApiFunction.DeploymentPackages/DFC.EventGridSubscriptions.ApiFunction.zip"
       ArmTemplateFolder: "$(Pipeline.Workspace)/DFC.Api.EventGridSubscriptions.Resources.ArmTemplates/"
       FunctionAppDomain: "$(FunctionAppDomain)"
-      FunctionAppName: 'dfc-pp-api-eventgridsubscriptions-fa'
+      FunctionAppName: '$(FunctionAppName)'
       EnvironmentName: PP_EventGridSubscriptions
       DFCAzureDevOpsProjectGuid: $(DFCAzureDevOpsProjectGuid)
       APIProductInstanceName: "$(ApimProductInstanceName)"
@@ -333,11 +333,11 @@ stages:
       # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
       # The top level -`s here defines an array of "something"
       # The inner level -'s defines an array of mappings.
-      Apis: 
+      Apis:
         -
           - name: Subscription
-            azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
-                
+            azureFunctionName: '$(FunctionAppName)'
+
 - stage: DeployPPDeadLetter
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
@@ -399,11 +399,11 @@ stages:
       # The Apis parameter requires a complex object be passed in,  which requires some odd looking yaml.
       # The top level -`s here defines an array of "something"
       # The inner level -'s defines an array of mappings.
-      Apis: 
+      Apis:
         -
           - name: Subscription
             azureFunctionName: '${{ variables.WebAppPrefix }}-api-eventgridsubscriptions-fa'
-                
+
 - stage: DeployPRDDeadLetter
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
