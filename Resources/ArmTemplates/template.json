@@ -11,19 +11,11 @@
         "appSharedStorageAccountName": {
             "type": "string"
         },
-        "aspInstances": {
-            "type": "int"
+        "appServicePlanSuffix": {
+            "type": "string",
+            "defaultValue": ""
         },
-        "aspTier": {
-            "type": "string"
-        },
-        "aspSize": {
-            "type": "string"
-        },
-        "aseHostingEnvironmentName": {
-            "type": "string"
-        },
-        "aseResourceGroup": {
+        "functionAppName": {
             "type": "string"
         },
         "SharedKeyVaultName": {
@@ -67,12 +59,11 @@
         }
     },
     "variables": {
-        "appServicePlanName": "[concat(variables('resourcePrefix'), '-asp')]",
+        "appServicePlanName": "[concat(variables('resourcePrefix'), parameters('appServicePlanSuffix'), '-asp')]",
         "appServicePlanResourceGroup": "[concat(variables('resourcePrefix'),'-rg')]",
         "BuildingBlocksDfcBaseUrl": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
-        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]", 
+        "ResourcePrefix": "[tolower(concat('dfc-', parameters('Environment'), '-api-eventgridsubscriptions'))]",
         "AppServiceAppInsightsName": "[concat(variables('ResourcePrefix'), '-ai')]",
-        "FunctionAppName": "[concat(variables('ResourcePrefix'), '-fa')]",
         "ApiName": "[concat(parameters('ApimProductInstanceName'), '-', parameters('ApiName'))]",
         "cosmosDbCollectionPartitionKey": "/PartitionKey",
         "cosmosDbDatabaseName": "dfc-eventstore",
@@ -167,7 +158,7 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "[variables('FunctionAppName')]",
+            "name": "[parameters('functionAppName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -177,7 +168,7 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('functionAppName')]"
+                        "value": "[parameters('functionAppName')]"
                     },
                     "appServicePlanName": {
                         "value": "[variables('appServicePlanName')]"

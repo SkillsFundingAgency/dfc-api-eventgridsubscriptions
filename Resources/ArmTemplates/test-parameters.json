@@ -11,20 +11,11 @@
         "appSharedStorageAccountName": {
             "value": "dfcdevappsharedstr"
         },
-        "aspInstances": {
-            "value": 1
+        "appServicePlanSuffix": {
+            "value": "-migrated"
         },
-        "aspTier": {
-            "value": "Standard"
-        },
-        "aspSize": {
-            "value": "2"
-        },
-        "aseHostingEnvironmentName": {
-            "value": "__AseServiceName__"
-        },
-        "aseResourceGroup": {
-            "value": "__aseResourceGroup__"
+        "functionAppName": {
+            "value": "dfc-foo-api-eventgridsubscriptions-fa-ver"
         },
         "sharedKeyVaultName": {
             "value": "dfc-dev-app-shared-kv"

@@ -9,6 +9,8 @@ variables:
   value: 2
 - name: FunctionAppUrl
   value: ''
+- name: FunctionAppName
+  value: dfc-sit-api-eventgridsubscriptions-fa
 - name: RateLimitRenewalPeriod
   value: 1
 - name: RateLimitRequests
