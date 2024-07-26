@@ -10,7 +10,7 @@ variables:
 - name: FunctionAppUrl
   value: ''
 - name: FunctionAppName
-  value: dfc-prd-api-eventgridsubscriptions-fa
+  value: dfc-prd-api-eventgridsubscriptions-fa-ver2
 - name: RateLimitRenewalPeriod
   value: 1
 - name: RateLimitRequests
